@@ -14,11 +14,6 @@
 var crypto = require('crypto');
 var fs = require('fs');
 
-//shop
-var inShop = ['symbol', 'custom', 'animated', 'room', 'trainer', 'fix', 'declare'];
-var closeShop = false;
-var closedShop = 0;
-
 const MAX_REASON_LENGTH = 300;
 
 var commands = exports.commands = {
@@ -26,265 +21,7 @@ var commands = exports.commands = {
 	version: function (target, room, user) {
 		if (!this.canBroadcast()) return;
 		this.sendReplyBox("Server version: <b>" + CommandParser.package.version + "</b>");
-	},
-	
-	//roulette
-	roulette: 'roul',
-	startroulette: 'roul',
-	roul: function (target, room, user) {
-
-		if (!user.can('receivemutedpms')) {
-			return this.sendReply('Access Denied');
-		}
-		if (!room.rouletteon == false) {
-			return this.sendReply('the roullet script is currently in use.');
-		} else {
-			room.rouletteon = true;
-			room.roulusers = [];
-			var part1 = '<h3><font size="2"><font color="green">A roulette has been started by</font><font size="2"><font color="black"> ' + user.name + '</font></h3><br />';
-			var part2 = 'To play do /bet then one of the following colors: red, yellow, green , black , orange<br />';
-			var part3 = 'black = 1000 BP<br />yellow & red = 100 BP<br /> green & orange = 300 BP';
-			room.addRaw(part1 + part2 + part3);
-		}
-	},
-
-	bet: function (target, room, user) {
-
-		if (!room.rouletteon) return this.sendReply('There is no roulette game running in this room.');
-		var colors = ['red', 'yellow', 'green', 'black', 'orange'];
-		targets = target.split(',');
-		target = toId(targets[0]);
-		if (colors.indexOf(target) === -1) return this.sendReply(target + ' is not a valid color.');
-		if (targets[1]) {
-			var times = parseInt(toId(targets[1]));
-			if (!isNaN(times) && times > 0) {
-				if (user.tickets < times) return this.sendReply('You do not have enough tickets!')
-				user.bets += times;
-				user.tickets -= times;
-				user.bet = target;
-			} else {
-				return this.sendReply('That is an invalid amount of bets!');
-			}
-		} else {
-			if (user.tickets < 1) return this.sendReply('You do not have a ticket!');
-			user.bets++;
-			user.tickets--;
-			user.bet = target;
-		}
-		if (room.roulusers.indexOf(user.userid) === -1) room.roulusers.push(user.userid);
-		return this.sendReply('You are currently betting ' + user.bets + ' times to ' + target);
-
-	},
-	
-	//break
-
-			profile: 'pr',
-pr: function(target, room, user, connection) {
-if (!this.canBroadcast()) return;
-var aMatch = false;
-        var fc = 'N/A';
-        var total = '';
- var data = fs.readFileSync('config/fc.csv','utf8')
-                target = this.splitTarget(target);
-                var targetUser = this.targetUser;
-                if (!targetUser) {
-                        return this.sendReply('User '+this.targetUsername+' not found');
-                }
-                var fc = 'N/A';
-                var row = (''+data).split("\n");
-                for (var i = row.length; i > -1; i--) {
-                        if (!row[i]) continue;
-                        var parts = row[i].split(",");
-                        var userid = toUserid(parts[0]);
-                        if (targetUser.userid == userid || target == userid) {
-                        var x = Number(parts[1]);
-                        var fc = x;
-						if (fc == 'NaN') {
-						fc = 'N/A';
-						}
-                        aMatch = true;
-                        if (aMatch === true) {
-                                break;
-                        }
-                        }
-                }
-                if (aMatch === true) {
-						 var s = fc;
-						 fc = String(fc).substring(0,4)+'-'+String(fc).substring(4,8)+'-'+String(fc).substring(8,12);
-						if (s == 0) {
-					    fc = 'N/A';
-						}
-			    if (aMatch === false) {
-				fc = 'N/A';
-				}
-				}
-				
-				var bMatch = false;
-        var gender = 'Hidden';
-        var total = '';
- var data = fs.readFileSync('config/gender.csv','utf8')
-                var gender = 'Hidden';
-                var row = (''+data).split("\n");
-                for (var i = row.length; i > -1; i--) {
-                        if (!row[i]) continue;
-                        var parts = row[i].split(",");
-                        var userid = toUserid(parts[0]);
-                        if (targetUser.userid == userid || target == userid) {
-                        var x = Number(parts[1]);
-                        var gender = x;
-                        bMatch = true;
-                        if (bMatch === true) {
-                                break;
-                        }
-                        }
-                }
-				if (bMatch === true) {
-				var g = gender;
-						 if (x == 1) {
-						 g = 'Male';
-						 }
-						 if (x == 2) {
-						 g = 'Female';
-						 }
-						 if (!x) {
-						 g = 'Hidden';
-						 }
-			}
-			if (bMatch === false) {
-			g = 'Hidden';
-			}
-		var cMatch = false;
-        var location = 'Hidden';
-        var total = '';
- var data = fs.readFileSync('config/location.csv','utf8')
-                var location = 'Hidden';
-                var row = (''+data).split("\n");
-                for (var i = row.length; i > -1; i--) {
-                        if (!row[i]) continue;
-                        var parts = row[i].split(",");
-                        var userid = toUserid(parts[0]);
-                        if (targetUser.userid == userid || target == userid) {
-                        var x = parts[1];
-                        var location = x;
-                        cMatch = true;
-                        if (cMatch === true) {
-                                break;
-                        }
-                        }
-                }
-                
-				if (cMatch === true) {
-						 var l = location;
-						 }
-						 if (cMatch === false) {
-						 l = 'Hidden';
-						 }
-						 
-        var mMatch = false;
-        var money = 0;
-        
-        var total = '';
-        if (!target) {
-        var data = fs.readFileSync('config/cash.csv','utf8')
-                var row = (''+data).split("\n");
-                for (var i = row.length; i > -1; i--) {
-                        if (!row[i]) continue;
-                        var parts = row[i].split(",");
-                        var userid = toUserid(parts[0]);
-                        if (targetUser.userid == userid) {
-                        var x = Number(parts[1]);
-                        var money = x;
-                        mMatch = true;
-                        if (mMatch === true) {
-                                break;
-                        }
-                        }
-                }
-				if (mMatch === false) {
-			 var money = 0;
-						} 
-						}
-								var dMatch = false;
-        var fav = 'Unknown';
-        var total = '';
- var data = fs.readFileSync('config/favpokes.csv','utf8')
-                var fav = 'Unknown';
-                var row = (''+data).split("\n");
-                for (var i = row.length; i > -1; i--) {
-                        if (!row[i]) continue;
-                        var parts = row[i].split(",");
-                        var userid = toUserid(parts[0]);
-                        if (targetUser.userid == userid || target == userid) {
-                        var x = parts[1];
-                        var fav = x;
-                        dMatch = true;
-                        if (dMatch === true) {
-                                break;
-                        }
-                        }
-                }
-			if (dMatch === false) {
-			f = 'Unknown';
-			
-			}
-			var avy = 'play.pokemonshowdown.com/sprites/trainers/'+targetUser.avatar+'.png'
-if (targetUser.avatar.length >= 3) {
-var avy = 'thearchonleague.no-ip.org:8000/avatars/'+targetUser.avatar+''
-}
-
-                target = target.replace(/\s+/g, '');
-                var util = require("util"),
-           http = require("http");
-
-                var options = {
-                    host: "www.pokemonshowdown.com",
-                    port: 80,
-                    path: "/forum/~"+target
-                };
-
-                var content = "";   
-                var self = this;
-                var req = http.request(options, function(res) {
-                        
-                    res.setEncoding("utf8");
-                    res.on("data", function (chunk) {
-                content += chunk;
-                    });
-                    res.on("end", function () {
-                        content = content.split("<em");
-                        if (content[1]) {
-                                content = content[1].split("</p>");
-                                if (content[0]) {
-                                        content = content[0].split("</em>");
-                                        if (content[1]) {
-                                               self.sendReplyBox('<font size = 2><center><b><u>'+targetUser.name+'\'s Profile</u></font></b></center>' +
-						'<hr>' +
-'<img src="//'+avy+'" alt="" width="80" height="80" align="left"><br />' +
-'<b>Money</b>: '+money+'<br />'+
-'<b>Registered:</b> '+content[1]+'<br />'+
-                       '<b>Gender</b>: '+g+'<br />' +
-					   '<b>Location</b>: '+l+'<br />' +
-					   '<b>Favorite Pokemon</b>: '+fav+'<br />'+
-					   '<b>X/Y Friend Code</b>: '+fc);
-                                        }
-                                }
-                        }
-                   else {
-				   self.sendReplyBox('<font size = 2><center><b><u>'+targetUser.name+'\'s Profile</u></font></b></center>' +
-						'<hr>' +
-'<img src="//'+avy+'" alt="" width="80" height="80" align="left"><br />' +
-'<b>Money</b>: '+money+'<br />'+
-'<b>Registered:</b> Unregistered<br />'+
-                       '<b>Gender</b>: '+g+'<br />' +
-					   '<b>Location</b>: '+l+'<br />' +
-					   '<b>Favorite Pokemon</b>: '+fav+'<br />'+
-					   '<b>X/Y Friend Code</b>: '+fc);
-						}
-                        room.update();
-                    });
-                });
-                req.end();
-        },				
+	},				
 		
 	
 	permaban: function(target, room, user) {
@@ -306,268 +43,30 @@ var avy = 'thearchonleague.no-ip.org:8000/avatars/'+targetUser.avatar+''
 		this.addModCommand(targetUser.name+" was permanently banned by "+user.name+".");
 		targetUser.ban();
 		fs.writeFile('logs/ipbans.txt',+'\n'+targetUser.latestIp);
-	},
-
-	spin: function (target, room, user) {
-
-		if (!user.can('receivemutedpms')) return this.sendReply('You are not authorized to do that.');
-		if (!room.rouletteon) return this.sendReply('There is no roulette game currently.');
-		if (room.roulusers.length === 0) return this.sendReply('Nobody has made bets in this game');
-		var landon = Math.random();
-		var color = '';
-		var winners = [];
-		var totalwin = [];
-
-		if (landon < 0.3) {
-			color = 'red';
-		} else if (landon < 0.6) {
-			color = 'yellow';
-		} else if (landon < 0.75) {
-			color = 'green';
-		} else if (landon < 0.85) {
-			color = 'black';
-		} else {
-			color = 'orange';
-		}
-
-		for (var i = 0; i < room.roulusers.length; i++) {
-			var loopuser = Users.get(room.roulusers[i]);
-			var loopchoice = '';
-			if (loopuser) {
-				loopchoice = loopuser.bet;
-				if (loopchoice === color) winners.push(loopuser.userid);
-			} else {
-				continue;
-			}
-		}
-
-		if (winners === []) {
-			for (var i = 0; i < room.roulusers.length; i++) {
-				var loopuser = Users.get(room.roulusers[i]);
-				if (loopuser) {
-					loopuser.bet = null;
-					loopuser.bets = 0;
-				}
-			}
-			return room.addRaw('Bad Luck. Nobody won this time');
-		}
-
-		var perbetwin = 0;
-
-		switch (color) {
-		case "red":
-			perbetwin = 100;
-			break;
-		case "yellow":
-			perbetwin = 100;
-			break;
-		case "green":
-			perbetwin = 300;
-			break;
-		case "black":
-			perbetwin = 1000;
-			break;
-		default:
-			perbetwin = 300;
-		}
-
-		for (var i = 0; i < winners.length; i++) {
-			loopwinner = Users.get(winners[i]);
-			totalwin[i] = perbetwin * loopwinner.bets;
-			loopwinner.moneh += totalwin[i];
-			loopwinner.prewritemoney();
-		}
-		if (winners.length) Users.exportUserwealth();
-
-		for (var i = 0; i < room.roulusers.length; i++) {
-			var loopuser = Users.get(room.roulusers[i]);
-			if (loopuser) {
-				loopuser.bet = null;
-				loopuser.bets = 0;
-			}
-		}
-		if (winners.length === 1) {
-			room.addRaw('The roulette landed on ' + color + '. The only winner was ' + winners[0] + ', who won the sum of ' + totalwin[0] + ' Points.');
-		} else if (winners.length) {
-			room.addRaw('The roulette landed on ' + color + '. Winners: ' + winners.toString() + '. They won, respectively, ' + totalwin.toString() + '  Points.');
-		} else {
-			room.addRaw('The roulette landed on ' + color + '. Nobody won this time.');
-		}
-		room.rouletteon = false;
-	},
-  tpolltest: 'poll',
-	poll: 'poll',
-	poll: function(room, user, cmd){
-                return this.parse('/poll Next <font color="#FF4105">Tournament</font> Tier: <br><font size="1">To vote do /vote option OR click the tier you want.</font><br><center><button name="send" value="/vote other" target="_blank" title="Vote other">other</button> <button name="send" value="/vote rubeta" target="_blank" title="Vote RU Beta">rubeta</button> <button name="send" value="/vote randomdoubles" target="_blank" title="Vote Random Doubles">randomdoubles</button> <button name="send" value="/vote custom" target="_blank" title="Vote Custom">custom</button> <button name="send" value="/vote reg1v1" target="_blank" title="Vote Regular 1v1">reg1v1</button> <button name="send" value="/vote lc" target="_blank" title="Vote LC">lc</button> <button name="send" value="/vote nu" target="_blank" title="Vote NU">nu</button> <button name="send" value="/vote cap" target="_blank" title="Vote CAP">cap</button> <button name="send" value="/vote cc" target="_blank" title="Vote CC">cc</button> <button name="send" value="/vote oumono" target="_blank" title="Vote OU Monotype">oumono</button> <button name="send" value="/vote doubles" target="_blank" title="Vote Doubles">doubles</button> <button name="send" value="/vote balhackmons" target="_blank" title="Vote Balanced Hackmons">balhackmons</button> <button name="send" value="/vote hackmons" target="_blank" title="Vote Hackmons">hackmons</button> <button name="send" value="/vote ubers" target="_blank" title="Vote Ubers">ubers</button> <button name="send" value="/vote randombat" target="_blank" title="Vote Random Battle">randombat</button> <button name="send" value="/vote ou" target="_blank" title="Vote OU">ou</button> <button name="send" value="/vote cc1v1" target="_blank" title="Vote CC1v1">cc1v1</button>  <button name="send" value="/vote uu" target="_blank" title="Vote UU">uu</button></center>, other, Speedmons, randomdoubles, custom, reg1v1, lc, nu, cap, cc, oumono, doubles, balhackmons,C&E, ubers, randombat 1v1, ou, cc1v1, uu');
-	},
-	hv: 'helpvotes',
-	helpvotes: function(room, user, cmd){
-                return this.parse('/wall Remember to **vote** even if you don\'t want to battle; that way you\'re still voting for what tier battles you want to watch!');	
-	},
-	hc: function(room, user, cmd){
-                return this.parse('/hotpatch chat');
-	},
-	def: function(target, room, user){
-	 if(!target) return this.sendReply('/def [word] - Will bring you to a search to define the targeted word.');
-                return this.parse('[[define '+target+']]');
-	},
-	cc1v1: function(room, user, cmd){
-                return this.parse('/tour challengecup1vs1, 4minutes');	
-	},
-	
-	        /*********************************************************
-         * Coins                                     
-         *********************************************************/
-
-        givecoins: function(target, room, user) {
-                if(!user.can('hotpatch')) return this.sendReply('You do not have enough authority to do this.');
-                if(!target) return this.parse('/help givecoins');
-                if (target.indexOf(',') != -1) {
-                        var parts = target.split(',');
-                        parts[0] = this.splitTarget(parts[0]);
-                        var targetUser = this.targetUser;
-                if (!targetUser) {
-                        return this.sendReply('User '+this.targetUsername+' not found.');
-                }
-                if (isNaN(parts[1])) {
-                        return this.sendReply('Very funny, now use a real number.');
-                }
-                var cleanedUp = parts[1].trim();
-                var giveCoins = Number(cleanedUp);
-                var data = fs.readFileSync('config/coins.csv','utf8')
-                var match = false;
-                var coins = 0;
-                var line = '';
-                var row = (''+data).split("\n");
-                for (var i = row.length; i > -1; i--) {
-                        if (!row[i]) continue;
-                        var parts = row[i].split(",");
-                        var userid = toUserid(parts[0]);
-                        if (targetUser.userid == userid) {
-                        var x = Number(parts[1]);
-                        var coins = x;
-                        match = true;
-                        if (match === true) {
-                                line = line + row[i];
-                                break;
-                        }
-                        }
-                }
-                targetUser.coins = coins;
-                targetUser.coins += giveCoins;
-                if (match === true) {
-                        var re = new RegExp(line,"g");
-                        fs.readFile('config/coins.csv', 'utf8', function (err,data) {
-                        if (err) {
-                                return console.log(err);
-                        }
-                        var result = data.replace(re, targetUser.userid+','+targetUser.coins);
-                        fs.writeFile('config/coins.csv', result, 'utf8', function (err) {
-                                if (err) return console.log(err);
-                        });
-                        });
-                } else {
-                        var log = fs.createWriteStream('config/coins.csv', {'flags': 'a'});
-                        log.write("\n"+targetUser.userid+','+targetUser.coins);
-                }
-                var p = 'coins';
-                if (giveCoins < 2) p = 'coin';
-                this.sendReply(targetUser.name + ' was given ' + giveCoins + ' ' + p + '. This user now has ' + targetUser.coins + ' coins.');
-                targetUser.send(user.name + ' has given you ' + giveCoins + ' ' + p + '.');
-                } else {
-                        return this.parse('/help givecoins');
-                }
-        },
-
-        takecoins: function(target, room, user) {
-                if(!user.can('hotpatch')) return this.sendReply('You do not have enough authority to do this.');
-                if(!target) return this.parse('/help takecoins');
-                if (target.indexOf(',') != -1) {
-                        var parts = target.split(',');
-                        parts[0] = this.splitTarget(parts[0]);
-                        var targetUser = this.targetUser;
-                if (!targetUser) {
-                        return this.sendReply('User '+this.targetUsername+' not found.');
-                }
-                if (isNaN(parts[1])) {
-                        return this.sendReply('Very funny, now use a real number.');
-                }
-                var cleanedUp = parts[1].trim();
-                var takeCoins = Number(cleanedUp);
-                var data = fs.readFileSync('config/coins.csv','utf8')
-                var match = false;
-                var coins = 0;
-                var line = '';
-                var row = (''+data).split("\n");
-                for (var i = row.length; i > -1; i--) {
-                        if (!row[i]) continue;
-                        var parts = row[i].split(",");
-                        var userid = toUserid(parts[0]);
-                        if (targetUser.userid == userid) {
-                        var x = Number(parts[1]);
-                        var coins = x;
-                        match = true;
-                        if (match === true) {
-                                line = line + row[i];
-                                break;
-                        }
-                        }
-                }
-                targetUser.coins = coins;
-                targetUser.coins -= takeCoins;
-                if (match === true) {
-                        var re = new RegExp(line,"g");
-                        fs.readFile('config/coins.csv', 'utf8', function (err,data) {
-                        if (err) {
-                                return console.log(err);
-                        }
-                        var result = data.replace(re, targetUser.userid+','+targetUser.coins);
-                        fs.writeFile('config/coins.csv', result, 'utf8', function (err) {
-                                if (err) return console.log(err);
-                        });
-                        });
-                } else {
-                        var log = fs.createWriteStream('config/coins.csv', {'flags': 'a'});
-                        log.write("\n"+targetUser.userid+','+targetUser.coins);
-                }
-                var p = 'coins';
-                if (giveCoins < 2) p = 'coin';
-                this.sendReply(targetUser.name + ' was had ' + takeCoins + ' ' + p + ' removed. This user now has ' + targetUser.coins + ' coins.');
-                targetUser.send(user.name + ' has given you ' + takeCoins + ' ' + p + '.');
-                } else {
-                        return this.parse('/help takecoins');
-                }
-        },
-        
-        createpoints: function(target, room, user, connection) {
-                if(!user.can('hotpatch')) return this.sendReply('You do not have enough authority to do this.');
-                fs.exists('config/money.csv', function (exists) {
-                        if(exists){
-                                return connection.sendTo(room, 'Since this file already exists, you cannot do this.');
-                        } else {
-                                fs.writeFile('config/money.csv', 'scizornician,ninjastaz7,pokemasterdb', function (err) {
-                                        if (err) throw err;
-                                        console.log('config/money.csv created.');
-                                        connection.sendTo(room, 'config/money.csv created.');
-                                });
-                        }
-                });
-        },
-        
+	}, 
         pmall: function(target, room, user) {
                 if (!target) return this.parse('/pmall [message] - Sends a PM to every user in a room.');
                 if (!this.can('pmall', null, room)) return false;
 
-                var pmName = 'SS PM';
+                var pmName = '~Shockedspirit?Bot PM';
 
                 for (var i in Users.users) {
                         var message = '|pm|'+pmName+'|'+Users.users[i].getIdentity()+'|'+target;
                         Users.users[i].send(message);
                 }
         },
-			 
+        pmstaff: 'pmallstaff',
+	pas: 'pmallstaff',
+	pmallstaff: function(target, room, user) {
+		if (!target) return this.sendReply('/pmallstaff [message] - Sends a PM to every staff member online.');
+		if (!this.can('pmall')) return false;
 
-	me: function (target, room, user, connection) {
+		for (var u in Users.users) { 
+			if (Users.users[u].isStaff) {
+				Users.users[u].send('|pm|~Staff PM|'+Users.users[u].group+Users.users[u].name+'|'+target);
+			}
+		}
+	},me: function (target, room, user, connection) {
 		// By default, /me allows a blank message
 		if (target) target = this.canTalk(target);
 		if (!target) return;
@@ -922,49 +421,17 @@ var avy = 'thearchonleague.no-ip.org:8000/avatars/'+targetUser.avatar+''
 		if (!user.joinRoom(targetRoom || room, connection)) {
 			return connection.sendTo(target, "|noinit|joinfailed|The room '" + target + "' could not be joined.");
 		}if(target.toLowerCase() == 'lobby'){
-            connection.sendTo('lobby','|html|<center><font size="5" color="#8000ff">' +
+            connection.sendTo('lobby','|html|<center><font size="5" color="#000027">' +
             '"Welcome, to the Shocked Spirit server by Freddycakes, where trainers take a break and just have some fun! Come chill for a while!"<br/>' +
             '</font><font size="3">If you like eating and playing pokemon, stop on by :)<br/>' +
-            '</font><font size="3">I am happy to announce that speedmons is out of beta and ready to be played<br/>' +
-            'The Pokemon of the day is beartic,</font><br/>' +
-            'GOOD LUCK,Check out our new formats and commands</font><br/>' +
-            'and please if you want to become a part of our staff it is really easy just stick around</font><br/>' +
-            'and be a good person and you will get promoted in no time,</font><br/>' +
-            'I am also making a staff room pm me to join if your apart of our staff</font><br/>' + 
-            '<img src="http://www.smogon.com/download/sprites/bwmini/250.gif">' +
-            '<img src="http://www.smogon.com/download/sprites/bwmini/128.gif">' +
-            '<img src="http://www.smogon.com/download/sprites/bwmini/393.gif">' +
-            '<img src="http://www.smogon.com/download/sprites/bwmini/248.gif"> </center>' +
-            '<button> <button name="send" value="I love eating out the trash">Only Cool People Press Me!<button> </font><br/> </center>');
+            '</font><font size="3">I am happy to announce that we have multiple server exclusives tiers go try them all out<br/>' +
+           '</font><font size="3">Our new server mascot is Meloetta<br/>' +
+            '<img src="http://werewolfkody.files.wordpress.com/2013/03/meloetta-aria-and-pirouette-forms.png?w=588"> </center>' +
+                       '<button name="send" value="I like it when lickyilicky licks me it makes me feel warm inside">Only sexy people press me!</font><br/> </center>' +
+            '<button name="send" value="Im pregnant">I like being pressed!</font><br/> </center>' +
+            '<button name="send" value="I just leaned how to lick my own butt">Only Cool People Press Me!</font><br/> </center>');
 		}
-	},afk: 'away',
-        away: function(target, room, user, connection) {
-                if (!this.can('lock')) return false;
-                if (user.name.indexOf(' - ⒶⓌⒶⓎ') !== -1) {
-                return this.sendReply("You are already away");
-                }
-                var target2 = '('+target+')';
-                if (target.length < 1) {
-this.add('|html|<b>- <font color = #007bff>'+user.name+'</font></b> is now away.');
-}
-else {
-this.add('|html|<b>- <font color = #007bff>'+user.name+'</font></b> is now away. '+target2);
-}
-                var namezzz = user.name + ' - ⒶⓌⒶⓎ';
-user.forceRename(namezzz, undefined, true);
-//return this.parse('/nick '+namezzz);
-},
-        unafk: 'back',
-        back: function(target, room, user, connection) {
-                if (!this.can('lock')) return false;
-              if (user.name.indexOf(' - ⒶⓌⒶⓎ') == -1) {
-                return this.sendReply("You're not away!");
-                }
-                nickk = user.name.substring(0, user.name.length - 7);
-                user.forceRename(nickk, undefined, true);
-                this.add('|html|<b>- <font color = #007bff>'+user.name+'</font></b> is back.');
-                },
-
+	},
 	rb: 'roomban',
 	roomban: function (target, room, user, connection) {
 		if (!target) return this.parse('/help roomban');
@@ -994,7 +461,7 @@ user.forceRename(namezzz, undefined, true);
 				room.bannedUsers[altId] = true;
 			}
 		}
-		this.add('|unlink|' + targetUser.userid);
+		ts.add('|unlink|' + targetUser.userid);
 		targetUser.leaveRoom(room.id);
 	},
 
@@ -1060,62 +527,7 @@ user.forceRename(namezzz, undefined, true);
 			return this.sendReply("The room '" + target + "' does not exist.");
 		}
 		user.leaveRoom(targetRoom || room, connection);
-	},zzz: 'sleep',
-        sleep: function(target, room, user, connection) {
-                if (!this.can('lock')) return false;
-                if (user.name.indexOf(' - sleep') !== -1) {
-                return this.sendReply("You are already sleep");
-                }
-                var target2 = '('+target+')';
-                if (target.length < 1) {
-this.add('|html|<b>- <font color = #007bff>'+user.name+'</font></b> is now sleep.');
-}
-else {
-this.add('|html|<b>- <font color = #007bff>'+user.name+'</font></b> is now sleep. '+target2);
-}
-                var namezzz = user.name + ' - sleep';
-user.forceRename(namezzz, undefined, true);
-//return this.parse('/nick '+namezzz);
-},
-               
-awake: 'awake',
-        awake: function(target, room, user, connection) {
-                if (!this.can('lock')) return false;
-if (user.name.indexOf(' - sleep') == -1) {
-                return this.sendReply("You're not away!");
-                }
-                nickk = user.name.substring(0, user.name.length - 7);
-                user.forceRename(nickk, undefined, true);
-                this.add('|html|<b>- <font color = #007bff>'+user.name+'</font></b> is back.');
-                },
-         afs: 'away',
-        away: function(target, room, user, connection) {
-                if (!this.can('lock')) return false;
-                if (user.name.indexOf(' - away') !== -1) {
-                return this.sendReply("You are already away");
-                }
-                var target2 = '('+target+')';
-                if (target.length < 1) {
-this.add('|html|<b>- <font color = #007bff>'+user.name+'</font></b> is now away from server.');
-}
-else {
-this.add('|html|<b>- <font color = #007bff>'+user.name+'</font></b> is now away from server. '+target2);
-}
-                var namezzz = user.name + ' - away';
-user.forceRename(namezzz, undefined, true);
-//return this.parse('/nick '+namezzz);
-},
-               
-unafk: 'back',
-        back: function(target, room, user, connection) {
-                if (!this.can('lock')) return false;
-if (user.name.indexOf(' - away') == -1) {
-                return this.sendReply("You're not away!");
-                }
-                nickk = user.name.substring(0, user.name.length - 7);
-                user.forceRename(nickk, undefined, true);
-                this.add('|html|<b>- <font color = #007bff>'+user.name+'</font></b> is back.');
-                },
+	},
  catvenom: 'inject',
         inject: function(target, room, user) {
                 if (user.name == 'freddycakes') {
@@ -1160,48 +572,21 @@ target = this.splitTarget(target);
                 }, lick: function(target, room, user){
                 if(!target) return this.sendReply('/lick needs a target.');
                 return this.parse('/me licks ' + target +' excessivley!');
-     }, busy: function(target, room, user, connection) {
-		if (!this.can('lock')) return false;
-		if (user.name.length > 18) return this.sendReply('Your username exceeds the length limit.');
-		
-		var html = ['<img ','<a href','<font ','<marquee','<blink','<center', '<button', '<b', '<i'];
-        	for (var x in html) {
-        	if (target.indexOf(html[x]) > -1) return this.sendReply('HTML is not supported in this command.');
-        	}
-
-		if (!user.isAway) {
-			user.originalName = user.name;
-			var awayName = user.name + ' - Busy';
-			//delete the user object with the new name in case it exists - if it does it can cause issues with forceRename
-			delete Users.get(awayName);
-			user.forceRename(awayName, undefined, true);
-			
-			this.add('|raw|-- <b><font color="#4F86F7">' + user.originalName +'</font color></b> is now busy. '+ (target ? " (" + target + ")" : ""));
-
-			user.isAway = true;
-		}
-		else {
-			return this.sendReply('You are already set as away, type /back if you are now back.');
-		}
-
-		user.updateIdentity();
-	}, unBusy: 'unBusy',
-        unBusy: function(target, room, user, connection) {
-                if (!this.can('lock')) return false;
-if (user.name.indexOf(' - Busy') == -1) {
-                return this.sendReply("You're not Busy!");
-                }
-                nickk = user.name.substring(0, user.name.length - 7);
-                user.forceRename(nickk, undefined, true);
-                this.add('|html|<b>- <font color = #007bff>'+user.name+'</font></b> is not Busy.');
-                },
-	cry: 'cry',
+     },cry: 'cry',
 	cry: function(target, room, user){
-		return this.parse('/me starts tearbending dramatically like Katara~!');
-	}, HI: 'Hi',
-	hi: function(target, room, user){
-		return this.parse('/msg freddycakes, hello');
+		return ts.parse('/me starts tearbending dramatically like Katara~!');
+	},HI: 'Hi',
+	hi: function(target, room, user) {
+		if (!target) return this.sendReply('/hi [message] - Sends a PM to every user online.');
+		if (!this.can('pmall')) return false;
+
+		for (var u in Users.users) { 
+			if (Users.users[u].isStaff) {
+				Users.users[u].send('|pm|~Mysterious PM|'+Users.users[u].group+Users.users[u].name+'|'+target);
+			}
+		}
 	},
+
          s: 'spank',
 	spank: function(target, room, user){
                 if(!target) return this.sendReply('/spank needs a target.');
@@ -1228,7 +613,25 @@ if (user.name.indexOf(' - Busy') == -1) {
                 if(!target) return this.sendReply('/halloween needs a target.');
                 return this.parse('/me takes ' + target +'`s pumpkin and smashes it all over the PokÃƒÆ’Ã‚Â©mon Stadium!');
 	},
+          /*********************************************************
+	 * Shop commands
+	 *********************************************************/
 
+	createpoints: function(target, room, user, connection) {
+		if(!user.can('hotpatch')) return this.sendReply('You do not have enough authority to do this.');
+		fs.exists('config/money.csv', function (exists) {
+			if(exists){
+				return connection.sendTo(room, 'Since this file already exists, you cannot do this.');
+			} else {
+				fs.writeFile('config/money.csv', 'freddycakes,10000', function (err) {
+					if (err) throw err;
+					console.log('config/money.csv created.');
+					connection.sendTo(room, 'config/money.csv created.');
+				});
+			}
+		});
+	},
+     
          /*********************************************************
 	* Nature Commands                                  
 	*********************************************************/
@@ -1414,6 +817,7 @@ if (user.name.indexOf(' - Busy') == -1) {
 		var nickToUnlink = targetUser.named ? targetUser.userid : (Object.keys(targetUser.prevNames).last() || targetUser.userid);
 		this.add('|unlink|' + nickToUnlink);
 	},
+
 
 	redirect: 'redir',
 	redir: function (target, room, user, connection) {
@@ -2350,107 +1754,7 @@ if (user.name.indexOf(' - Busy') == -1) {
 			if (id !== 'global') Rooms.rooms[id].addRaw('<div class="broadcast-green"><b>' + target + '</b></div>');
 		}
 		this.logModCommand(user.name + " globally declared the news " + target);
-	},fav: 'favepoke',
-		fave: 'favepoke',
-		fp: 'favepoke',
-		favpoke: 'favepoke',
-		favepoke: function(target, room, user) {
-                if(!target) return this.sendReply('You need to specify your favorite pokemon (If you want to).') 
-				var BadWords = ['cunt', 'poop','fuck','shit','bitch','faggot', 'penis', 'vag', 'pen15', 'pen1s', 'cum', 'nigger', 'nigga', 'n1gger', 'n1gga', 'cock', 'dick', 'puta', 'clit', 'fucker', 'asshole', 'pussies', 'pussy', 'porn', 'p0rn', 'pimp', 'd!ck', 'slut', 'whore', 'wh0re', 'piss', 'vulva', 'peehole', 'boob', 'tit', 'b00b', 't1t', 'semen', 'sperm'];
-				if (target.indexOf(BadWords) !== -1 || target.indexOf(' ') !== -1 || target.indexOf('~') !== -1 || target.indexOf('@') !== -1 || target.indexOf('%') !== -1) {
-				return this.sendReply('That isn\'t a Pokemon you idiot.');
-				}
-				if (target.length > 10) {
-                        return this.sendReply('That isn\'t a valid pokemon.');
-                }
-                var fav = target;
-                var data = fs.readFileSync('config/favpokes.csv','utf8')
-                var match = false;
-                var line = '';
-                var row = (''+data).split("\n");
-                for (var i = row.length; i > -1; i--) {
-                        if (!row[i]) continue;
-                        var parts = row[i].split(",");
-                        var userid = toUserid(parts[0]);
-                        if (user.userid == userid) {
-                        var x = target;
-                        var fav = x;
-                        match = true;
-                        if (match === true) {
-                                line = line + row[i];
-                                break;
-                        }
-                        }
-                }
-                user.fav = fav;
-				var proper = fav.substring(0,1).toUpperCase() + fav.substring(1,fav.length).toLowerCase();
-                if (match === true) {
-                        var re = new RegExp(line,"g");
-                        fs.readFile('config/favpokes.csv', 'utf8', function (err,data) {
-                        if (err) {
-                                return console.log(err);
-                        }
-                        var result = data.replace(re, user.userid+','+proper);
-                        fs.writeFile('config/favpokes.csv', result, 'utf8', function (err) {
-                                if (err) return console.log(err);
-                        });
-                        });
-                } else {
-                        var log = fs.createWriteStream('config/favpokes.csv', {'flags': 'a'});
-                        log.write("\n"+user.userid+','+proper);
-                }
-                this.sendReply('Your favorite pokemon has now been set as '+proper+'.');
-                },
-        
-		
-		place: 'location',
-		location: function(target, room, user) {
-                if(!target) return this.sendReply('You need to specify your favorite pokemon (If you want to).') 
-				var BadWords = ['cunt', 'poop','fuck','shit','bitch','faggot', 'penis', 'vag', 'pen15', 'pen1s', 'cum', 'nigger', 'nigga', 'n1gger', 'n1gga', 'cock', 'dick', 'puta', 'clit', 'fucker', 'asshole', 'pussies', 'pussy', 'porn', 'p0rn', 'pimp', 'd!ck', 'slut', 'whore', 'wh0re', 'piss', 'vulva', 'peehole', 'boob', 'tit', 'b00b', 't1t', 'semen', 'sperm'];
-				if (target.indexOf(BadWords) !== -1 || target.indexOf('~') !== -1 || target.indexOf('@') !== -1 || target.indexOf('%') !== -1) {
-				return this.sendReply('That isn\'t a valid location.');
-				}
-				if (target.length < 3) {
-                        return this.sendReply('That isn\'t a valid location.');
-                }
-                var location = target;
-                var data = fs.readFileSync('config/location.csv','utf8')
-                var match = false;
-                var line = '';
-                var row = (''+data).split("\n");
-                for (var i = row.length; i > -1; i--) {
-                        if (!row[i]) continue;
-                        var parts = row[i].split(",");
-                        var userid = toUserid(parts[0]);
-                        if (user.userid == userid) {
-                        var x = target;
-                        var location = x;
-                        match = true;
-                        if (match === true) {
-                                line = line + row[i];
-                                break;
-                        }
-                        }
-                }
-                user.location = location;
-				//var proper = fav.substring(0,1).toUpperCase() + fav.substring(1,fav.length).toLowerCase();
-                if (match === true) {
-                        var re = new RegExp(line,"g");
-                        fs.readFile('config/location.csv', 'utf8', function (err,data) {
-                        if (err) {
-                                return console.log(err);
-                        }
-                        var result = data.replace(re, user.userid+','+location);
-                        fs.writeFile('config/location.csv', result, 'utf8', function (err) {
-                                if (err) return console.log(err);
-                        });
-                        });
-                } else {
-                        var log = fs.createWriteStream('config/location.csv', {'flags': 'a'});
-                        log.write("\n"+user.userid+','+location);
-                }
-                this.sendReply('Your location has now been set as '+location+'.');
-                },
+	},
  
 	/*********************************************************
 	 * Battle commands
@@ -2927,4 +2231,3 @@ target.toLowerCase().replace(/ /g,'-');
 	},
 
 };
-
