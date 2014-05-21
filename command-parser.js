@@ -205,10 +205,6 @@ var parse = exports.parse = function (message, room, user, connection, levelsDee
 				this.splitTarget(target, exactName);
 				return this.targetUser;
 			},
-			getLastIdOf: function (user) {
-				if (typeof user === 'string') user = Users.get(user);
-				return (user.named ? user.userid : (Object.keys(user.prevNames).last() || user.userid));
-			},
 			splitTarget: splitTarget
 		};
 
@@ -292,6 +288,24 @@ function canTalk(user, room, connection, message) {
 					userGroup = ' ';
 				}
 			}
+var BadWords = ['cunt','faggot', 'penis', 'vag', 'pen15', 'pen1s', 'cum', 'nigger', 'nigga', 'n1gger', 'n1gga', 'cock', 'dick', 'puta', 'clit', 'fucker', 'asshole', 'pussies', 'pussy', 'porn', 'p0rn', 'pimp', 'd!ck', 'slut', 'whore', 'wh0re', 'piss', 'vulva', 'peehole', 'boob', ' tit ', 'b00b', 't1t', 'semen', 'sperm', 'fuck', 'pluck', 'bullshit', 'ass', 'bitch', 'diggers by tho', 'fluck', 'duck', 'suck', 'slurp', 'blow', 'job', 'handjob', 'cock', 'shrek is love', 'motherfucker', 'anime fanboy', 'shitface', ' pussy hole', 'suck my dick', 'puto', 'dumbass', 'pendejo', 'poiler', 'spoiler', 'dressing'];
+	for (var i = 0; i < BadWords.length; i++) {
+	if (message.toLowerCase().indexOf(BadWords[i]) >= 0 && !user.can('broadcast')) {
+	connection.sendTo(room, 'Your message was not sent, as it contains profane language.');
+	return false;
+	}
+	}
+
+	var caps = ['A','B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
+	for (var i = 0; i < caps.length; i++) {
+	if (message.toUpperCase().indexOf(caps[i]) >= 0) {
+		if (message == message.toUpperCase() && message.length >= 15 && !user.can('broadcast')) {
+	connection.sendTo(room, '|html| <font color= "red"><b>Caps spam detected. Your post was not sent.');
+	return false;
+	}
+	}
+	}
+
 			if (!user.autoconfirmed && (room.auth && room.auth[user.userid] || user.group) === ' ' && room.modchat === 'autoconfirmed') {
 				connection.sendTo(room, "Because moderated chat is set, your account must be at least one week old and you must have won at least one ladder game to speak in this room.");
 				return false;
@@ -392,3 +406,4 @@ var plugins = require('./chat-plugins.js').plugins;
 for (var p in plugins) {
 	if (plugins[p].commands) Object.merge(commands, plugins[p].commands);
 }
+
