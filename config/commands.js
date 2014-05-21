@@ -245,6 +245,10 @@ var commands = exports.commands = {
 					data = "No Pokemon, item, move or ability named '" + target + "' was found. Showing the data of '" + newTargets[0].name + "' instead.\n";
 				}
 				data += '|c|~|/data-' + newTargets[i].searchType + ' ' + newTargets[i].name + '\n';
+				if (newTargets[i].searchType === 'pokemon') {
+					var template = Tools.getTemplate(newTargets[i].species);
+					data += '|html|<center><b>Tier: ' + template.tier + '</b></center>';
+				}
 			}
 		} else {
 			data = "No Pokemon, item, move or ability named '" + target + "' was found. (Check your spelling?)";
@@ -261,11 +265,10 @@ var commands = exports.commands = {
 		if (!target) return this.parse('/help dexsearch');
 		var targets = target.split(',');
 		var searches = {};
-		var allTiers = {'uber':1, 'ou':1, 'uu':1, 'lc':1, 'cap':1, 'bl':1, 'bl2':1, 'ru':1, 'bl3':1, 'nu':1};
+		var allTiers = {'uber':1, 'ou':1, 'uu':1, 'lc':1, 'cap':1, 'bl':1, 'bl2':1};
 		var allColours = {'green':1, 'red':1, 'blue':1, 'white':1, 'brown':1, 'yellow':1, 'purple':1, 'pink':1, 'gray':1, 'black':1};
 		var showAll = false;
 		var megaSearch = null;
-		var feSearch = null; // search for fully evolved pokemon only
 		var output = 10;
 
 		for (var i in targets) {
@@ -321,22 +324,6 @@ var commands = exports.commands = {
 				continue;
 			}
 
-			if (target === 'fe' || target === 'fullyevolved' || target === 'nfe' || target === 'notfullyevolved') {
-				if (target === 'nfe' || target === 'notfullyevolved') isNotSearch = !isNotSearch;
-				if ((feSearch && isNotSearch) || (feSearch === false && !isNotSearch)) return this.sendReplyBox('A search cannot both exclude and include fully evolved Pokémon.');
-				feSearch = !isNotSearch;
-				continue;
-			}
-
-			var targetMove = Tools.getMove(target);
-			if (targetMove.exists) {
-				if (!searches['moves']) searches['moves'] = {};
-				if (Object.count(searches['moves'], true) === 4 && !isNotSearch) return this.sendReplyBox("Specify a maximum of 4 moves.");
-				if ((searches['moves'][targetMove.name] && isNotSearch) || (searches['moves'][targetMove.name] === false && !isNotSearch)) return this.sendReplyBox("A search cannot both exclude and include a move.");
-				searches['moves'][targetMove.name] = !isNotSearch;
-				continue;
-			}
-
 			if (target.indexOf(' type') > -1) {
 				target = target.charAt(0).toUpperCase() + target.slice(1, target.indexOf(' type'));
 				if (target in Tools.data.TypeChart) {
@@ -347,18 +334,26 @@ var commands = exports.commands = {
 					continue;
 				}
 			}
-			return this.sendReplyBox("'" + Tools.escapeHTML(target) + "' could not be found in any of the search categories.");
+
+			var targetMove = Tools.getMove(target);
+			if (targetMove.exists) {
+				if (!searches['moves']) searches['moves'] = {};
+				if (Object.count(searches['moves'], true) === 4 && !isNotSearch) return this.sendReplyBox("Specify a maximum of 4 moves.");
+				if ((searches['moves'][targetMove.name] && isNotSearch) || (searches['moves'][targetMove.name] === false && !isNotSearch)) return this.sendReplyBox("A search cannot both exclude and include a move.");
+				searches['moves'][targetMove.name] = !isNotSearch;
+				continue;
+			} else {
+				return this.sendReplyBox("'" + sanitize(target, true) + "' could not be found in any of the search categories.");
+			}
 		}
 
-		if (showAll && Object.size(searches) === 0 && megaSearch === null && feSearch === null) return this.sendReplyBox("No search parameters other than 'all' were found. Try '/help dexsearch' for more information on this command.");
+		if (showAll && Object.size(searches) === 0 && megaSearch === null) return this.sendReplyBox("No search parameters other than 'all' were found.\nTry '/help dexsearch' for more information on this command.");
 
 		var dex = {};
 		for (var pokemon in Tools.data.Pokedex) {
 			var template = Tools.getTemplate(pokemon);
-			var megaSearchResult = (megaSearch === null || (megaSearch === true && template.isMega) || (megaSearch === false && !template.isMega));
-			var feSearchResult = (feSearch === null || (feSearch === true && !template.evos.length) || (feSearch === false && template.evos.length))
 			if (template.tier !== 'Unreleased' && template.tier !== 'Illegal' && (template.tier !== 'CAP' || (searches['tier'] && searches['tier']['cap'])) &&
-				megaSearchResult && feSearchResult) {
+				(megaSearch === null || (megaSearch === true && template.isMega) || (megaSearch === false && !template.isMega))) {
 				dex[pokemon] = template;
 			}
 		}
@@ -439,10 +434,6 @@ var commands = exports.commands = {
 		}
 
 		var results = Object.keys(dex).map(function (speciesid) {return dex[speciesid].species;});
-		results = results.filter(function (species) {
-			var template = Tools.getTemplate(species);
-			return !(species !== template.baseSpecies && results.indexOf(template.baseSpecies) > -1);
-		});
 		var resultsStr = "";
 		if (results.length > 0) {
 			if (showAll || results.length <= output) {
@@ -453,7 +444,7 @@ var commands = exports.commands = {
 				resultsStr = results.slice(0, 10).join(", ") + ", and " + string(results.length - output) + " more. Redo the search with 'all' as a search parameter to show all results.";
 			}
 		} else {
-			resultsStr = "No Pokémon found.";
+			resultsStr = "No PokÃ©mon found.";
 		}
 		return this.sendReplyBox(resultsStr);
 	},
@@ -540,7 +531,7 @@ var commands = exports.commands = {
 			pokemon = {types: [type1.id]};
 			target = type1.id;
 		} else {
-			return this.sendReplyBox("" + Tools.escapeHTML(target) + " isn't a recognized type or pokemon.");
+			return this.sendReplyBox("" + sanitize(target) + " isn't a recognized type or pokemon.");
 		}
 
 		var weaknesses = [];
@@ -633,17 +624,16 @@ var commands = exports.commands = {
 
 	groups: function (target, room, user) {
 		if (!this.canBroadcast()) return;
-		this.sendReplyBox(
-			"+ <b>Voice</b> - They can use ! commands like !groups, and talk during moderated chat<br />" +
-			"% <b>Driver</b> - The above, and they can mute. Global % can also lock users and check for alts<br />" +
-			"@ <b>Moderator</b> - The above, and they can ban users<br />" +
-			"&amp; <b>Leader</b> - The above, and they can promote to moderator and force ties<br />" +
-			"~ <b>Administrator</b> - They can do anything, like change what this message says<br />" +
-			"# <b>Room Owner</b> - They are administrators of the room and can almost totally control it"
-		);
+		this.sendReplyBox('+ <b>Career</b> - They can use ! commands like !groups, and talk during moderated chat<br />' +
+			'% <b>PeaceKeeper</b> - The above, and they can mute. Global % can also lock users and check for alts<br />' +
+			'@ <b>Head PeaceKeeper</b> - The above, and they can ban users<br />' +
+			'&amp; <b>Game Maker</b> - The above, and they can promote moderators and force ties<br />'+
+			'~ <b>President</b> - They can do anything, like change what this message says<br />'+
+			'â—ˆ <b>Gym Leader</b> - They are Voice but they have access to /announce<br />'+
+			'âœ¸ <b>Elite Four</b> - They are basically Driver<br />'+
+			'âœ¯ <b>Champion</b> - They are Driver with the ability to /declare');
 	},
 
-	git: 'opensource',
 	opensource: function (target, room, user) {
 		if (!this.canBroadcast()) return;
 		this.sendReplyBox(
@@ -655,14 +645,9 @@ var commands = exports.commands = {
 		);
 	},
 
-	staff: function (target, room, user) {
-	    if (!this.canBroadcast()) return;
-	    this.sendReplyBox("<a href=\"http://www.smogon.com/sim/staff_list\">Pokemon Showdown Staff List</a>");
-	},
-
 	avatars: function (target, room, user) {
 		if (!this.canBroadcast()) return;
-		this.sendReplyBox('You can <button name="avatars">change your avatar</button> by clicking on it in the <button name="openOptions"><i class="icon-cog"></i> Options</button> menu in the upper right. Custom avatars are only obtainable by staff.');
+		this.sendReplyBox("Your avatar can be changed using the Options menu (it looks like a gear) in the upper right of Pokemon Showdown. Custom avatars are only obtainable by staff.");
 	},
 
 	introduction: 'intro',
@@ -670,23 +655,24 @@ var commands = exports.commands = {
 		if (!this.canBroadcast()) return;
 		this.sendReplyBox(
 			"New to competitive pokemon?<br />" +
-			"- <a href=\"http://www.smogon.com/sim/ps_guide\">Beginner's Guide to Pokémon Showdown</a><br />" +
-			"- <a href=\"http://www.smogon.com/dp/articles/intro_comp_pokemon\">An introduction to competitive Pokémon</a><br />" +
+			"- <a href=\"http://www.smogon.com/sim/ps_guide\">Beginner's Guide to PokÃ©mon Showdown</a><br />" +
+			"- <a href=\"http://www.smogon.com/dp/articles/intro_comp_pokemon\">An introduction to competitive PokÃ©mon</a><br />" +
 			"- <a href=\"http://www.smogon.com/bw/articles/bw_tiers\">What do 'OU', 'UU', etc mean?</a><br />" +
 			"- <a href=\"http://www.smogon.com/xyhub/tiers\">What are the rules for each format? What is 'Sleep Clause'?</a>"
 		);
 	},
-
 	mentoring: 'smogintro',
 	smogonintro: 'smogintro',
 	smogintro: function (target, room, user) {
 		if (!this.canBroadcast()) return;
 		this.sendReplyBox(
-			"Welcome to Smogon's official simulator! Here are some useful links to <a href=\"http://www.smogon.com/mentorship/\">Smogon\'s Mentorship Program</a> to help you get integrated into the community:<br />" +
+			"Welcome to Smogon's Official PokÃ©mon Showdown server! The Mentoring room can be found <a href=\"http://play.pokemonshowdown.com/communitymentoring\">here</a> or by using /join communitymentoring.<br /><br />" +
+			"Here are some useful links to Smogon\'s Mentorship Program to help you get integrated into the community:<br />" +
 			"- <a href=\"http://www.smogon.com/mentorship/primer\">Smogon Primer: A brief introduction to Smogon's subcommunities</a><br />" +
 			"- <a href=\"http://www.smogon.com/mentorship/introductions\">Introduce yourself to Smogon!</a><br />" +
 			"- <a href=\"http://www.smogon.com/mentorship/profiles\">Profiles of current Smogon Mentors</a><br />" +
-			"- <a href=\"http://mibbit.com/#mentor@irc.synirc.net\">#mentor: the Smogon Mentorship IRC channel</a>"
+			"- <a href=\"http://mibbit.com/#mentor@irc.synirc.net\">#mentor: the Smogon Mentorship IRC channel</a><br />" +
+			"All of these links and more can be found at the <a href=\"http://www.smogon.com/mentorship/\">Smogon Mentorship Program's hub</a>."
 		);
 	},
 
@@ -822,7 +808,7 @@ var commands = exports.commands = {
 			"- We wait a few minutes before restarting so people can finish up their battles<br />" +
 			"- The restart itself will take around 0.6 seconds<br />" +
 			"- Your ladder ranking and teams will not change<br />" +
-			"- We are restarting to update Pokémon Showdown to a newer version"
+			"- We are restarting to update PokÃ©mon Showdown to a newer version"
 		);
 	},
 
@@ -831,7 +817,7 @@ var commands = exports.commands = {
 		if (!target) {
 			if (!this.canBroadcast()) return;
 			this.sendReplyBox("Please follow the rules:<br />" +
-				(room.rulesLink ? "- <a href=\"" + Tools.escapeHTML(room.rulesLink) + "\">" + Tools.escapeHTML(room.title) + " room rules</a><br />" : "") +
+				(room.rulesLink ? "- <a href=\"" + sanitize(room.rulesLink) + "\">" + sanitize(room.title) + " room rules</a><br />" : "") +
 				"- <a href=\"http://pokemonshowdown.com/rules\">" + (room.rulesLink ? "Global rules" : "Rules") + "</a>");
 			return;
 		}
@@ -1039,7 +1025,11 @@ var commands = exports.commands = {
 	 * Miscellaneous commands
 	 *********************************************************/
 
-	potd: function (target, room, user) {
+	secret: function(target, room, user) {
+		this.sendReply("Once suxaphones");
+	},
+
+	potd: function(target, room, user) {
 		if (!this.can('potd')) return false;
 
 		Config.potd = target;
@@ -1079,18 +1069,9 @@ var commands = exports.commands = {
 		return this.sendReplyBox("Random number (1 - " + maxRoll + "): " + rand);
 	},
 
-	pr: 'pickrandom',
-	pick: 'pickrandom',
-	pickrandom: function (target, room, user) {
-		var options = target.split(',');
-		if (options.length < 2) return this.sendReplyBox("Please give more than one option, separated by commas");
-		if (!this.canBroadcast()) return false;
-		return this.sendReplyBox('<em>We randomly picked:</em> ' + Tools.escapeHTML(options.sample().trim()));
-	},
-
 	register: function () {
 		if (!this.canBroadcast()) return;
-		this.sendReplyBox('You will be prompted to register upon winning a rated battle. Alternatively, there is a register button in the <button name="openOptions"><i class="icon-cog"></i> Options</button> menu in the upper right.');
+		this.sendReply("You must win a rated battle to register.");
 	},
 
 	lobbychat: function (target, room, user, connection) {
@@ -1116,7 +1097,7 @@ var commands = exports.commands = {
 			return this.parse('/help showimage');
 		}
 
-		this.sendReply('|raw|<img src="' + Tools.escapeHTML(targets[0]) + '" alt="" width="' + toId(targets[1]) + '" height="' + toId(targets[2]) + '" />');
+		this.sendReply('|raw|<img src="' + sanitize(targets[0]) + '" alt="" width="' + toId(targets[1]) + '" height="' + toId(targets[2]) + '" />');
 	},
 
 	htmlbox: function (target, room, user) {
@@ -1133,6 +1114,47 @@ var commands = exports.commands = {
 		if (!this.can('rawpacket')) return false;
 		// secret sysop command
 		room.add(target);
+	},
+
+	hide: 'hideauth',
+	hideauth: function(target, room, user){
+		if(!user.can('hideauth'))
+			return this.sendReply( '/hideauth - access denied.');
+
+		var tar = ' ';
+		if(target){
+			target = target.trim();
+			if(config.groupsranking.indexOf(target) > -1){
+				if( config.groupsranking.indexOf(target) <= config.groupsranking.indexOf(user.group)){
+					tar = target;
+				}else{
+					this.sendReply('The group symbol you have tried to use is of a higher authority than you have access to. Defaulting to \' \' instead.');
+				}
+			}else{
+				this.sendReply('You have tried to use an invalid character as your auth symbol. Defaulting to \' \' instead.');
+			}
+		}
+
+		user.getIdentity = function(){
+			if(this.muted)
+				return '!' + this.name;
+			if(this.locked)
+				return '#' + this.name;
+			return tar + this.name;
+		};
+		user.updateIdentity();
+		this.sendReply( 'You are now hiding your auth symbol as \''+tar+ '\'.');
+		return this.logModCommand(user.name + ' is hiding auth symbol as \''+ tar + '\'');
+	},
+
+	showauth: function(target, room, user){
+		if(!user.can('hideauth'))
+			return	this.sendReply( '/showauth - access denied.');
+
+		delete user.getIdentity;
+		user.updateIdentity();
+		this.sendReply('You have now revealed your auth symbol.');
+		return this.logModCommand(user.name + ' has revealed their auth symbol.');
 	},
 
 	/*********************************************************
@@ -1251,18 +1273,18 @@ var commands = exports.commands = {
 		}
 		if (target === 'all' || target === 'effectiveness' || target === 'matchup' || target === 'eff' || target === 'type') {
 			matched = true;
-			this.sendReply("/effectiveness OR /matchup OR /eff OR /type [attack], [defender] - Provides the effectiveness of a move or type on another type or a Pokémon.");
-			this.sendReply("!effectiveness OR /matchup OR !eff OR !type [attack], [defender] - Shows everyone the effectiveness of a move or type on another type or a Pokémon.");
+			this.sendReply("/effectiveness OR /matchup OR /eff OR /type [attack], [defender] - Provides the effectiveness of a move or type on another type or a PokÃ©mon.");
+			this.sendReply("!effectiveness OR /matchup OR !eff OR !type [attack], [defender] - Shows everyone the effectiveness of a move or type on another type or a PokÃ©mon.");
 		}
-		if (target === 'all' || target === 'dexsearch' || target === 'dsearch' || target === 'ds') {
+		if (target === 'all' || target === 'dexsearch' || target === 'dsearch') {
 			matched = true;
 			this.sendReply("/dexsearch [type], [move], [move], ... - Searches for Pokemon that fulfill the selected criteria.");
 			this.sendReply("Search categories are: type, tier, color, moves, ability, gen.");
 			this.sendReply("Valid colors are: green, red, blue, white, brown, yellow, purple, pink, gray and black.");
-			this.sendReply("Valid tiers are: Uber/OU/BL/UU/BL2/RU/BL3/NU/LC/CAP.");
+			this.sendReply("Valid tiers are: Uber/OU/BL/LC/CAP.");
 			this.sendReply("Types must be followed by ' type', e.g., 'dragon type'.");
 			this.sendReply("Parameters can be excluded through the use of '!', e.g., '!water type' excludes all water types.");
-			this.sendReply("The parameter 'mega' can be added to search for Mega Evolutions only, and the parameters 'FE' or 'NFE' can be added to search fully or not-fully evolved Pokemon only.");
+			this.sendReply("The parameter 'mega' can be added to search for Mega Evolutions only.");
 			this.sendReply("The order of the parameters does not matter.");
 		}
 		if (target === 'all' || target === 'dice' || target === 'roll') {
@@ -1431,6 +1453,10 @@ var commands = exports.commands = {
 			matched = true;
 			this.sendReply("/help OR /h OR /? - Gives you help.");
 		}
+		if (target === 'all' || target === 'image') {
+			matched = true;
+			this.sendReply("/image returns the image with a specified width and height.");
+		}
 		if (!target) {
 			this.sendReply("COMMANDS: /nick, /avatar, /rating, /whois, /msg, /reply, /ignore, /away, /back, /timestamps, /highlight");
 			this.sendReply("INFORMATIONAL COMMANDS: /data, /dexsearch, /groups, /opensource, /avatars, /faq, /rules, /intro, /tiers, /othermetas, /learn, /analysis, /calc (replace / with ! to broadcast. (Requires: + % @ & ~))");
@@ -1448,4 +1474,891 @@ var commands = exports.commands = {
 		}
 	},
 
+
+
+	/*********************************************************
+	 * PokemonDb custom commands
+	 *********************************************************/
+	DBUserPSnames: 'dbusernames',
+	dbusernames: function(target, room, user) {
+		if (!this.canBroadcast()) return;
+		this.sendReplyBox('Need to know who is who?<br />' +
+			'- <a href="http://pokemondb.net/pokebase/meta/2785/what-is-your-pokemon-online-showdown-username?">Database and DB Server Usernames</a><br />');
+	},
+	
+	dbinfo: function(target, room, user) {
+		if (!this.canBroadcast()) return;
+		this.sendReplyBox(
+			' <b>Welcome to the Pokemon Database Showdown server!</b> Pokemon Database is a popular Pokemon fansite. ' +
+			' Most of the users on this Showdown server are from our Q&amp;A community PokeBase, but all are welcome here!<br><br>' +
+			' <a href="http://pokemondb.net">Pokemon Database homepage</a><br>' +
+			' <a href="http://pokemondb.net/pokebase/">Pokebase Q&amp;A</a><br>' +
+			' Twitter: <a href="https://twitter.com/pokemondb">@pokemon</a><br>' +
+			' Facebook: <a href="https://www.facebook.com/PokemonDb">PokemonDb</a><br>'
+		);
+	},
+
+
+	pickrandom: function (target, room, user) {
+		if (!target)
+			return this.sendReply('/pickrandom [option 1], [option 2], ... - Randomly chooses one of the given options.');
+		if (!this.canBroadcast())
+			return;
+
+		var targets;
+		if (target.indexOf(',') === -1)
+			targets = target.split(' ');
+		else
+			targets = target.split(',');
+
+		var result = Math.floor(Math.random() * targets.length);
+		return this.sendReplyBox(targets[result].trim());
+	},
+
+	customavatar: function(target, room, user, connection) {
+		if (!this.can('customavatars'))
+			return false;
+		if (!target)
+			return connection.sendTo(room, 'Usage: /customavatar URL, filename');
+		var http = require('http-get');
+		target = target.split(", ");
+		http.get(target[0], 'config/avatars/' + target[1], function (error, result) {
+			if (error)
+				connection.sendTo(room, '/customavatar - You supplied an invalid URL or file name!');
+			else
+				connection.sendTo(room, 'File saved to: ' + result.file);
+		});
+	},
+
+	smited: function (target, room, user) {
+		if (user.userid != 'scizornician,nindzya,cobblewobble')
+			return false;
+
+		target = this.splitTarget(target);
+		var targetUser = this.targetUser;
+		if (!targetUser)
+			return this.sendReply('User ' + this.targetUsername + ' not found.');
+		if (!this.can('smite', targetUser))
+			return false;
+
+		if (Users.checkBanned(targetUser.latestIp) && !target && !targetUser.connected) {
+			var problem = ' but was already smited';
+			return this.privateModCommand('(' + targetUser.name + ' would be smited by ' + user.name+problem + '.)');
+		}
+
+		targetUser.popup(user.name + ' has permanently banned you.');
+		this.addModCommand('I smite thee ' + targetUser.name);
+		this.addModCommand(targetUser.name + ' was smited by ' + user.name + '.');
+		targetUser.ban();
+		ipbans.write('\n' + targetUser.latestIp);
+	},
+
+	showbadges: function(target, room, user, connection) {
+		if (!this.canBroadcast()) return;
+
+		if (!target) {
+			var data = fs.readFileSync('config/badges.csv','utf8')
+			var match = false;
+			var numBadges = 0;
+			var stuff = (''+data).split("\n");
+			for (var i = stuff.length; i > -1; i--) {
+				if (!stuff[i])
+					continue;
+				var row = stuff[i].split(",");
+				var userid = toUserid(row[0]);
+				if (user.userid == userid) {
+					var x = Number(row[1]);
+					var numBadges = x;
+					match = true;
+					break;
+				}
+			}
+			if (match === true) {
+				this.sendReplyBox(user.name + ' has ' + numBadges + ' DB badge(s).');
+			}
+			if (match === false) {
+				connection.sendTo(room, 'You have no DB badges.');
+			}
+			user.badges = numBadges;
+		}
+		else {
+			var data = fs.readFileSync('config/badges.csv','utf8')
+			target = this.splitTarget(target);
+			var targetUser = this.targetUser;
+			if (!targetUser) {
+				return this.sendReply('User '+this.targetUsername+' not found.');
+			}
+			var match = false;
+			var numBadges = 0;
+			var stuff = (''+data).split("\n");
+
+			for (var i = stuff.length; i > -1; i--) {
+				if (!stuff[i])
+					continue;
+				var row = stuff[i].split(",");
+				var userid = toUserid(row[0]);
+				if (targetUser.userid == userid || target == userid) {
+					var x = Number(row[1]);
+					var numBadges = x;
+					match = true;
+					break;
+				}
+			}
+
+			if (match === true) {
+				this.sendReplyBox(targetUser.name + ' has ' + numBadges + ' badge(s).');
+			}
+			if (match === false) {
+				connection.sendTo(room, '' + targetUser.name + ' has no badges.');
+			}
+			Users.get(targetUser.userid).badges = numBadges;
+		}
+	},
+
+	givebadge: function(target, room, user, connection) {
+		if (ougymleaders.indexOf(user.userid) != -1 || admins.indexOf(user.userid) != -1) {
+			if (!target) {
+				var data = fs.readFileSync('config/badges.csv','utf8')
+				var match = false;
+				var numBadges = 0;
+				var stuff = (''+data).split("\n");
+				var line = '';
+
+				for (var i = stuff.length; i > -1; i--) {
+					if (!stuff[i])
+						continue;
+					var row = stuff[i].split(",");
+					var userid = toUserid(row[0]);
+					if (user.userid == userid) {
+						var x = Number(row[1]);
+						var numBadges = x;
+						match = true;
+						line = line + stuff[i];
+						break;
+					}
+				}
+				user.badges = numBadges;
+				user.badges = user.badges + 1;
+
+				if (match === true) {
+					var re = new RegExp(line,"g");
+					fs.readFile('config/badges.csv', 'utf8', function (err,data) {
+						if (err) return console.log(err);
+						var result = data.replace(re, user.userid+','+user.badges);
+						fs.writeFile('config/badges.csv', result, 'utf8', function (err) {
+							if (err) return console.log(err);
+						});
+					});
+				}
+				else {
+					var log = fs.createWriteStream('config/badges.csv', {'flags': 'a'});
+					log.write("\n"+user.userid+','+user.badges);
+				}
+				return this.sendReply('You were given a DB badge. You now have ' + user.badges + ' DB badges.');
+			}
+			else {
+				if (target.indexOf(',') === -1) {
+					var data = fs.readFileSync('config/badges.csv','utf8')
+					target = this.splitTarget(target);
+					var targetUser = this.targetUser;
+					if (!targetUser) {
+						return this.sendReply('User '+this.targetUsername+' not found.');
+					}
+					var match = false;
+					var numBadges = 0;
+					var stuff = (''+data).split("\n");
+					var line = '';
+
+					for (var i = stuff.length; i > -1; i--) {
+						if (!stuff[i]) continue;
+						var row = stuff[i].split(",");
+						var userid = toUserid(row[0]);
+						if (targetUser.userid == userid) {
+							var x = Number(row[1]);
+							var numBadges = x;
+							match = true;
+							line = line + stuff[i];
+							break;
+						}
+					}
+
+					Users.get(targetUser.userid).badges = numBadges;
+					Users.get(targetUser.userid).badges = Users.get(targetUser.userid).badges + 1;
+					if (match === true) {
+						var re = new RegExp(line,"g");
+						fs.readFile('config/badges.csv', 'utf8', function (err,data) {
+							if (err) return console.log(err);
+							var result = data.replace(re, targetUser.userid+','+Users.get(targetUser.userid).badges);
+							fs.writeFile('config/badges.csv', result, 'utf8', function (err) {
+								if (err) return console.log(err);
+							});
+						});
+					}
+					else {
+						var log = fs.createWriteStream('config/badges.csv', {'flags': 'a'});
+						log.write("\n"+targetUser.userid+','+Users.get(targetUser.userid).badges);
+					}
+
+					return this.sendReply(targetUser + ' was given a DB badge.');
+				}
+			}
+		}
+		else {
+			return this.sendReply('Access Denied.');
+		}
+
+		if (admins.indexOf(user.userid) != -1) {
+			if (target.indexOf(',') != -1) {
+				var parts = target.split(',');
+				parts[0] = this.splitTarget(parts[0]);
+				var targetUser = this.targetUser;
+				if (!targetUser)
+					return this.sendReply('User '+this.targetUsername+' not found.');
+
+				if (isNaN(parts[1])) {
+					return this.sendReply('Please use a realistic value.');
+				}
+				var data = fs.readFileSync('config/badges.csv','utf8')
+				var match = false;
+				var numBadges = 0;
+				var stuff = (''+data).split("\n");
+				var line = '';
+
+				for (var i = stuff.length; i > -1; i--) {
+					if (!stuff[i]) continue;
+					var row = stuff[i].split(",");
+					var userid = toUserid(row[0]);
+					if (targetUser.userid == userid) {
+						var x = Number(row[1]);
+						var numBadges = x;
+						match = true;
+						line = line + stuff[i];
+						break;
+					}
+				}
+
+				Users.get(targetUser.userid).badges = numBadges;
+				var asdf = parts[1].trim();
+				var yay = Number(parts[1]);
+				Users.get(targetUser.userid).badges = Users.get(targetUser.userid).badges + yay;
+
+				if (match === true) {
+					var re = new RegExp(line,"g");
+					fs.readFile('config/badges.csv', 'utf8', function (err,data) {
+						if (err) return console.log(err);
+						var result = data.replace(re, targetUser.userid+','+Users.get(targetUser.userid).badges);
+						fs.writeFile('config/badges.csv', result, 'utf8', function (err) {
+							if (err) return console.log(err);
+						});
+					});
+				}
+				else {
+					var log = fs.createWriteStream('config/badges.csv', {'flags': 'a'});
+					log.write("\n"+targetUser.userid+','+Users.get(targetUser.userid).badges);
+				}
+
+				return this.sendReply(targetUser + ' was given ' + parts[1] + ' DB badges. ' + targetUser + ' now has ' + Users.get(targetUser.userid).badges + ' badges.');
+			}
+		}
+		else {
+			return this.sendReply('No.');
+		}
+	},
+
+	badgesystem: function(target, room, user) {
+		if (!this.canBroadcast()) return;
+		this.sendReplyBox(
+			'<b><font size = 3>The Badge System</font></b><br>' +
+			'The badge system is in place to keep track of how many badges a user has. ' +
+			'It can easily show whether you have the 8 required badges needed to prgress to the E4. ' +
+			'At the moment, this system is for the DB League but in the fututre we hope to use it fro the arcade. ' +
+				'Any DB Gym Leader can use the /givebadge command to give a user a badge. ' +
+			'Users can use /showbadges to view their badges. ' +
+			'Gym leaders can also give multiple badges, a way to implement users onto this new database. ' +
+			'For instance, if a user has 6 badges, someone can do /givebadge [user], 6 to give them 6 badges. ' +
+			'PM Administration with any questions you have about this system and we\'ll attempt to answer them.'
+		);
+	},
+
+
+	gymleaders: function(target, room, user) {
+		if (!this.canBroadcast()) return;
+		this.sendReplyBox(
+			'<b><font size = 3>Introducing DB Server Gym Leaders!</font></b><br>' +
+			'<img src ="http://pokestadium.com/pokemon/sprites/trainers/5/blackwhite2/010.gif"><br>' +
+				'<b>Leader Flareykinz</b> Gym Leader for OU Monotype!<br>' +
+			'<img src ="http://sprites.pokecheck.org/t/032.gif"><br>' +
+			'<b>Leader Flafpert</b> Gym Leader for UU!<br>' +
+			'<img src ="http://sprites.pokecheck.org/t/116.gif"><br>' +
+			'<b>Leader Cakey</b> Gym Leader for OU!<br>' +
+			'<img src ="http://cdn.bulbagarden.net/upload/e/e6/Spr_E_Brendan.png"><br>' +
+			'<b>Leader Fizz</b> Gym Leader for Ubers!<br>' +
+			'<img src ="http://img.pokemondb.net/sprites/trainers/heartgold-soulsilver/will.png"><br>' +
+			'<b>Leader Lenub</b> Gym Leader for OU (2)!<br>' +
+			'<img src ="http://mob1005.photobucket.com/albums/af180/Twilightwolf4/th_cyrus.gif"><br>' +
+			'<b>Leader Demon</b> Gym Leader for VGC Doubles!<br>' +
+			'<img src ="http://play.pokemonshowdown.com/sprites/trainers/167.png"><br>' +
+			'<b>To be considered</b> This Gym Leader is being considered as we speak!<br>' +
+			'<img src ="http://sprites.pokecheck.org/t/115.gif"><br>' +
+			'<b>Leader Flame</b> Gym Leader for UU (2)!<br>'
+		);
+	},
+
+	elite4: function(target, room, user) {
+		if (!this.canBroadcast()) return;
+		this.sendReplyBox(
+			'<b><font size = 3>Introducing the DB Server Elite 4!</font></b><br>' +
+			'<img src ="http://sprites.pokecheck.org/t/127.gif"><br>' +
+				'<b>Elite 4 Ravens!</b> OU Elite 4 member!<br>' +
+			'<img src ="http://sprites.pokecheck.org/t/137.gif"><br>' +
+			'<b>Elite 4 Pokenubz</b> OU Monotype Elite 4 member!<br>' +
+			'<img src ="http://sprites.pokecheck.org/t/112.gif"><br>' +
+			'<b>Elite 4 Hex</b> Ubers Elite 4 memeber!<br>' +
+			'<img src ="http://sprites.pokecheck.org/t/079.gif"><br>' +
+			'<b>Elite 4 Blob</b> UU Elite 4 member!<br>'
+		);
+	},
+
+	champion: function(target, room, user) {
+		if (!this.canBroadcast()) return;
+		this.sendReplyBox(
+			'<b><font size = 3>Behold, the DB Server Champion!</font></b><br>' +
+			'<img src ="http://sprites.pokecheck.org/t/155.gif"><br>' +
+			'<b>Champion Mew!</b> Skilled in all aspects of comeptitive battling!<br>'
+		);
+	},
+
+	picktier: 'tierpick',
+	tierpick: function(target, room, user){
+		return this.parse('/poll Vote for the next Tournament Tier,randombattle,ou,ubers,uu,ru,nu,lc,cap,cc1v1,oumonotype,1v1,smogondoubles,vgcdoubles');
+	},
+
+	 tourcommands: function(target, room, user) {
+		if (!this.canBroadcast()) return;
+		this.sendReplyBox('<b><font size =2>Tournaments can be run by Voice (+) or higher using the commands below:</font></b><br \>' +
+		'/tour [tier], [size] - Starts a tournament with a competitor limitation<br \>' +
+				'/tour [tier], [x minutes] - Starts a tournament with a sign-up phase timer<br \>' +
+		'/endtour - Ends the current tournament<br \>' +
+		'/fj [username] - Forces a user to join a tournament<br \>' +
+		'/fl [username] - Force a user to leave a tournament<br \>' +
+		'/toursize [size] - Changes the size of a currently running tournament<br \>' +
+		'/tourtime [number] - Changes the timer of a current tournaments sign-up phase<br \>' +
+		'/replace [username], [username] - Replaces user in a tournament with the second user');
+	},
+
+	impersonate:'imp',
+	imp: function(target, room, user) {
+		if (!user.can('declare')) return this.sendReply('/imp - Access denied.');
+		if (!this.canTalk()) return;
+		if (!target) return this.parse('/help imp');
+
+		target = this.splitTarget(target);
+		var targetUser = this.targetUser;
+		if (!targetUser || !targetUser.connected) {
+			return this.sendReply('User '+this.targetUsername+' not found.');
+		}
+		if (!target)
+			return this.sendReply('You cannot make the user say nothing.');
+		if (target.indexOf('/announce') == 0 || target.indexOf('/warn') == 0 || target.indexOf('/data')==0)
+			return this.sendReply('You cannot use this to make a user announce/data/warn in imp.');
+
+		room.add('|c|'+targetUser.getIdentity()+'|'+ target);
+		this.logModCommand(user.name+' impersonated '+targetUser.name+' and said:' + target);
+	},
+
+	afk: function(target, room, user, connection) {
+		if (!this.canTalk()) return false;
+		if (!this.can('warn')) return false;
+		if (!user.isAfk) {
+			user.realName = user.name
+			var afkName = user.name + ' - afk';
+			delete Users.get(afkName);
+			user.forceRename(afkName, undefined, true);
+			this.send('|html|<b>'+user.realName+'</b> is now Away ('+target+').');
+			user.isAfk = true;
+			user.blockChallenges = true;
+		}
+		else {
+			return this.sendReply('You are already AFK, type /unafk');
+		}
+		user.updateIdentity();
+	},
+
+	unafk: function(target, room, user, connection) {
+		if (!user.isAfk) {
+			return this.sendReply('You are not AFK.');
+		}
+		else {
+			if (user.name.slice(-6) !== ' - afk') {
+				user.isAfk = false;
+				return this.sendReply('You are no longer AFK!');
+			}
+			var newName = user.realName;
+			delete Users.get(newName);
+			user.forceRename(newName, undefined, true);
+			user.authenticated = true;
+			this.send('|html|<b>' + newName + '</b> is back');
+			user.isAfk = false;
+			user.blockChallenges = false;
+		}
+		user.updateIdentity();
+	},
+	
+	tournaments: function(target, room, user) {
+		if (!this.canBroadcast()) return;
+		this.sendReplyBox(
+			'<b><font size = 3>The Tournament Room</font></b><br>' +
+			'The tournament room is there so that you can join organised tournaments and win points.<br>' +
+			'You can only win points from a tournament in the Tournament Room.<br>' +
+			'This prevents Room Voice / Mods / Owners hosting small tournaments to gain points.<br>' +
+			'You can start tournaments in other rooms but they <b>won\'t</b> reward points.<br>' +
+			'<b>Enjoy!</b>'
+		);
+	},
+	
+	scizornician: 'sciz',
+	sciz: function (target, room, user) {
+		if (!this.canBroadcast()) return;
+		this.sendReplyBox('<center><font color="#A80000" size ="3"><b>Scizornician</b></font><br />' +
+                  '<center><b>Rank:</b> Administrator<br />' +
+                  '<center><b>Role:</b> I am one of the Admins on this server, my role being to develop this server.</font><br />' +
+                  '<center><b>Help me out:</b> If you find any bugs just PM me and I\'ll fix it.<br />' +
+                  '<center><img src="http://showdown.pokemondb.net:8000/avatars/scizornician.png">');
+	},
+	
+		nindzya: 'ninja',
+	ninja: function (target, room, user) {
+		if (!this.canBroadcast()) return;
+		this.sendReplyBox('<center><font color="#000052" size ="3"><b>Ninja / Nindzya</b></font><br />' +
+                  '<center><b>Rank:</b> Administrator<br />' +
+                  '<center><b>Role:</b> Oh hey, I\'m kind of running things here! With a few others of course.</font><br />' +
+                  '<center><b>Help me out:</b> If you have any concerns, head over to my wall <a href="http://pokemondb.net/pokebase/meta/user/Ninja">here.</a><br />' +
+                  '<center><img src="http://showdown.pokemondb.net:8000/avatars/ninja.png">');
+	},
+	
+	d: 'poof',
+	cpoof: 'poof',
+	poof: (function () {
+		var messages = [
+			"was sat on by Alpha Draconis!",
+			"visited Sciz's lab and was mutated!",
+			"used Explosion!",
+			"fell into the void.",
+			"was KO'd by Mewderator's Play Rough!",
+			"angered a Crawdaunt!",
+			"was Bullet Punched by Scizornician!",
+			"has left the building.",
+			"was judged by the Amlighty Pokemaster!",
+			"was petrified by Once.",
+			"disagreed with Scizbot!",
+			"was hit by Magikarp's Revenge!",
+			"was sucked into a whirlpool!",
+			"was banned because of COPPA!",
+			"is phat!",
+			"got eaten by a bunch of Igglybuff!",
+			"got lost on the internet!",
+			"A large Galvantula descended from the sky and picked up {{user}}.",
+			"fleed!",
+			"got their sausage smoked by Charmanderp!",
+			"fell into a worm whole!",
+			"took an arrow to the knee... and then one to the face.",
+			"peered through the hole on Shedinja's back",
+			"saw a creep pasta!",
+			"used Final Gambit and missed!",
+			"pissed off a the server!",
+			"got CobbleWobbled!",
+			"was told to leave by Goodragoodragoo!",
+			"Scizbot help up it\s red card to {{user}}.",
+			"was unfortunate and didn't get a cool message.",
+			"Psychic x accidently banned {{user}} from the server!",
+			"was given the look by Once!",
+			"Aeternis showed {{user}} the door!",
+			"was shoved in a Blendtec Blender!",
+			"the community voted to skip {{user}}!",
+			"was bitten by a rabid Wolfie!",
+			"was kicked from server!",
+			"recieved capital punishment!"
+		];
+
+		return function(target, room, user) {
+			if (config.poofOff) return this.sendReply("Poof is currently disabled.");
+			if (target && !this.can('broadcast')) return false;
+			if (room.id !== 'lobby') return false;
+			var message = target || messages[Math.floor(Math.random() * messages.length)];
+			if (message.indexOf('{{user}}') < 0)
+				message = '{{user}} ' + message;
+			message = message.replace(/{{user}}/g, user.name);
+			if (!this.canTalk(message)) return false;
+
+			var colour = '#' + [1, 1, 1].map(function () {
+				var part = Math.floor(Math.random() * 0xaa);
+				return (part < 0x10 ? '0' : '') + part.toString(16);
+			}).join('');
+
+			room.addRaw('<center><strong><font color="' + colour + '">~~ ' + sanitize(message) + ' ~~</font></strong></center>');
+			user.disconnectAll();
+		};
+	})(),
+
+	poofoff: 'nopoof',
+	nopoof: function() {
+		if (!this.can('poofoff')) return false;
+		config.poofOff = true;
+		return this.sendReply("Poof is now disabled.");
+	},
+
+	poofon: function() {
+		if (!this.can('poofoff')) return false;
+		config.poofOff = false;
+		return this.sendReply("Poof is now enabled.");
+	},
+	
+	survey: 'poll',
+        poll: function (target, room, user) {
+                if (!tour.lowauth(user, room)) return this.sendReply('You do not have enough authority to use this command.');
+                if (!tour[room.id]) tour.reset(room.id);
+                if (tour[room.id].question) return this.sendReply('There is currently a poll going on already.');
+                var separacion = "&nbsp;&nbsp;";
+                var answers = tour.splint(target);
+                if (answers.length < 3) return this.sendReply('Correct syntax for this command is /poll question, option, option...');
+                var question = answers[0];
+                answers.splice(0, 1);
+                var answers = answers.join(',').toLowerCase().split(',');
+                tour[room.id].question = question;
+                tour[room.id].answerList = answers;
+                room.addRaw('<div class="infobox"><h2>' + tour[room.id].question + separacion + '<font size=2 color = "#939393"><small>/vote OPTION<br /><i><font size=1>Poll started by '+user.name+'</font size></i></small></font></h2><hr />' + separacion + separacion + " &bull; " + tour[room.id].answerList.join(' &bull; ') + '</div>');
+        },
+
+        vote: function(target, room, user) {
+                var ips = JSON.stringify(user.ips);
+                if (!tour[room.id].question) return this.sendReply('There is no poll currently going on in this room.');
+                if (tour[room.id].answerList.indexOf(target.toLowerCase()) == -1) return this.sendReply('\'' + target + '\' is not an option for the current poll.');
+                tour[room.id].answers[ips] = target.toLowerCase();
+                return this.sendReply('You are now voting for ' + target + '.');
+        },
+
+        votes: function(target, room, user) {
+                if (!this.canBroadcast()) return;
+                this.sendReply('NUMBER OF VOTES: ' + Object.keys(tour[room.id].answers).length);
+        },
+
+        endsurvey: 'endpoll',
+        ep: 'endpoll',
+        endpoll: function (target, room, user) {
+                if (!tour.lowauth(user, room)) return this.sendReply('You do not have enough authority to use this command.');
+                if (!tour[room.id] || !tour[room.id].question) return this.sendReply('There is no poll to end in this room.');
+                var votes = Object.keys(tour[room.id].answers).length;
+                if (votes == 0) return room.addRaw("<h3>The poll was canceled because of lack of voters.</h3>");
+                var options = new Object();
+                var obj = tour[room.id];
+                for (var i in obj.answerList) options[obj.answerList[i]] = 0;
+                for (var i in obj.answers) options[obj.answers[i]]++;
+                var sortable = new Array();
+                for (var i in options) sortable.push([i, options[i]]);
+                sortable.sort(function (a, b) {
+                        return a[1] - b[1]
+                });
+                var html = "";
+                for (var i = sortable.length - 1; i > -1; i--) {
+                        console.log(i);
+                        var option = sortable[i][0];
+                        var value = sortable[i][1];
+                        html += "&bull; " + option + " - " + Math.floor(value / votes * 100) + "% (" + value + ")<br />";
+                }
+                room.addRaw('<div class="infobox"><h2>Results to "' + obj.question + '"<br /><i><font size=1>Poll ended by '+user.name+'</font size></i></h2><hr />' + html + '</div>');
+                tour[room.id].question = undefined;
+                tour[room.id].answerList = new Array();
+                tour[room.id].answers = new Object();
+        },
+
+        pollremind: 'pr',
+        pr: function(target, room, user) {
+                var separacion = "&nbsp;&nbsp;";
+                if (!tour[room.id].question) return this.sendReply('There is currently no poll going on.');
+                if (!this.canBroadcast()) return;
+                this.sendReply('|raw|<div class="infobox"><h2>' + tour[room.id].question + separacion + '<font class="closebutton" size=1><small>/vote OPTION</small></font></h2><hr />' + separacion + separacion + " &bull; " + tour[room.id].answerList.join(' &bull; ') + '</div>');
+        },
+        
+        useravy: function(target, room, user) {
+		if (!this.canBroadcast()) return;
+		target = this.splitTarget(target);
+		var targetUser = this.targetUser;
+		if (!targetUser) {
+			return this.sendReplyBox('The user '+this.targetUsername+' is not online.');
+		}
+		return this.sendReplyBox('<hr><center><img src="http://play.pokemonshowdown.com/sprites/trainers/'+targetUser.avatar+'.png"></center><hr>');
+	},
+        
+	image: function(target, room, user) {
+		if (!target) return this.parse('/help image');
+		if (!this.can('declare', null, room)) return false;
+
+		if (!this.canTalk()) return;
+
+		targets = target.split(', ');
+		if (targets.length != 3) {
+			return this.parse('/help image');
+		}
+
+		this.add('|raw|'+sanitize(user.name)+' shows:<br /><img src="'+sanitize(targets[0])+'" alt="" width="'+toId(targets[1])+'" height="'+toId(targets[2])+'" />');
+	},
+     
+
+      /***************************************
+	* Trainer Cards                        *
+	***************************************/
+
+	freddycakes: function(target, room, user) {
+        if (!this.canBroadcast()) return;
+        this.sendReplyBox('<center><img src="http://24.media.tumblr.com/tumblr_mb1gpbUJJ61qaven0o1_500.gif" weight="150" height="200">' +
+'<b> </b> <br />' + 
+'<b>Name:</b> Freddycakes<br />' +
+'<b>Ace:</b> Meloetta<br />' +
+'<b>Location:</b> America<br />' +
+'<b>Age:</b> 14<br />' +
+'<b>Gender:</b> Female<br />' +
+'<b>Rank:</b> Server Owner<br />' +
+'<b>Coolness Points</b> 10000<br />' +
+'<b>Coolness:</b> 10<br />' );
+                
+    	},
+     shadow: function(target, room, user) {
+        if (!this.canBroadcast()) return;
+        this.sendReplyBox('<center><img src="http://yggdrasilleague.weebly.com/uploads/2/2/8/2/22825324/1399793512.png" weight="150" height="100">' +
+                '<b> </b> <br />' + 
+                '<b>Name:</b> Elite F?ur Shadow<br />' +
+                '<b>Ace:</b> Mega Charizard-X<br />' +
+                '<b>Location:</b> America<br />' +
+                '<b>Age:</b> 17<br />' +
+                '<b>Gender:</b> Male<br />' +
+                '<b>Rank:</b> Admin<br />' +
+                '<b>Coolness:</b> 9.9<br />' );
+                
+    	},
+     ntgm: function(target, room, user) {
+        if (!this.canBroadcast()) return;
+        this.sendReplyBox('<center><img src="http://play.pokemonshowdown.com/sprites/trainers/209.png" weight="150" height="100">' +
+                '<b> </b> <br />' + 
+                '<b>Name:</b> NewTetrisGuy_MP<br />' +
+                '<b>Favorite Pokemon:</b> Terrakion<br />' +
+                '<b>Location:</b> Morocco<br />' +
+                '<b>Age:</b> 15<br />' +
+                '<b>Gender:</b> Male<br />' +
+                '<b>Rank:</b> Regular User Bum<br />' +
+                '<b>Coolness:</b> 8.9<br />' );
+                
+    	},
+      latioss: function(target, room, user) {
+        if (!this.canBroadcast()) return;
+        this.sendReplyBox('<center><img src="http://media.giphy.com/media/6T5tfHNXRqCze/giphy.gif">' +
+                '<b> </b> <br />' + 
+                '<b>Name:</b> Latioss<br />' +
+                '<b>Ace:</b> Celebi<br />' +
+                '<b>Location:</b> Philippines<br />' +
+                '<b>Age:</b> 13<br />' +
+                '<b>Gender:</b> Male<br />' +
+                '<b>Rank:</b> Admin<br />' +
+                '<b>Coolness:</b> 9.9<br />' );
+
+    	},
+      pcf: function(target, room, user) {
+        if (!this.canBroadcast()) return;
+        this.sendReplyBox('<center><img src="http://play.pokemonshowdown.com/sprites/trainers/170.png">' +
+                '<b> </b> <br />' + 
+                '<b>Name:</b> PotatoChargeFTW<br />' +
+                '<b>Ace:</b> Articuno<br />' +
+                '<b>Location:</b> Singapore<br />' +
+                '<b>Age:</b> 13<br />' +
+                '<b>Gender:</b> Male<br />' +
+                '<b>Rank:</b> Admin<br />' +
+                '<b>Coolness:</b> 9.5<br />' );
+                
+    	},
+     sandchez: function(target, room, user) {
+        if (!this.canBroadcast()) return;
+        this.sendReplyBox('<center><img src="https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcTkj_Al6NwOBEYiw7JvrqjD0j-hd4AgWjk6_I0EgErEuz-FU03wqA">' +
+                '<b> </b> <br />' + 
+                '<b>Name:</b>Sandchez<br />' +
+                '<b>Ace:</b> Charizard Mega-X<br />' +
+                '<b>Location:</b> America<br />' +
+                '<b>Age:</b> 15<br />' +
+                '<b>Gender:</b> Male<br />' +
+                '<b>Rank:</b> Regular User Bum<br />' +
+                '<b>Coolness:</b> 7.5<br />' );
+                
+    	},
+       llllex123: function(target, room, user) {
+        if (!this.canBroadcast()) return;
+        this.sendReplyBox('<center><img src="http://media.giphy.com/media/r98lRazY6EdXy/giphy.gif">' +
+                '<b> </b> <br />' + 
+                '<b>Name:</b>llllex123<br />' +
+                '<b>Ace:</b> Charizard Mega-Y<br />' +
+                '<b>Location:</b> New Zealand<br />' +
+                '<b>Age:</b> 13<br />' +
+                '<b>Gender:</b> Male<br />' +
+                '<b>Rank:</b> Server owner<br />' +
+                '<b>Coolness:</b> 10<br />' );
+                
+    	}, iyan: function(target, room, user) {
+        if (!this.canBroadcast()) return;
+        this.sendReplyBox('<center><img src="http://localhost:8000/avatars/greninja.png" weight="100" height="150">' +
+                '<b> </b> <br />' + 
+                '<b>Name:</b>Iyan Maker<br />' +
+                '<b>Ace:</b> Greninja<br />' +
+                '<b>Location:</b> United Kingdom<br />' +
+                '<b>Age:</b> 13<br />' +
+                '<b>Gender:</b> Female<br />' +
+                '<b>Rank:</b> Moderator<br />' +
+                '<b>Coolness:</b> 8.8<br />' );
+                
+      },
+        talon: function(target, room, user) {
+        if (!this.canBroadcast()) return;
+        this.sendReplyBox('<center><img src="http://media.pldh.net/pokemon/gen5/blackwhite_animated_front/398.gif">' +
+                '<b> </b> <br />' + 
+                '<b>Name:</b>TalonUsesBraveBird<br />' +
+                '<b>Ace:</b> Staraptor<br />' +
+                '<b>Location:</b> Alberta<br />' +
+                '<b>Age:</b> Not born Yet<br />' +
+                '<b>Gender:</b> Male<br />' +
+                '<b>Rank:</b> Moderator<br />' +
+                '<b>Coolness:</b> 8.9.6<br />' );
+                
+      },
+        marp: function(target, room, user) {
+        if (!this.canBroadcast()) return;
+        this.sendReplyBox('<center><img src="http://play.pokemonshowdown.com/sprites/trainers/2.png">' +
+                '<b> </b> <br />' + 
+                '<b>Name:</b>Marpilicous<br />' +
+                '<b>Ace:</b> Ninetales<br />' +
+                '<b>Location:</b> America<br />' +
+                '<b>Age:</b> Not born Yet<br />' +
+                '<b>Gender:</b> Female<br />' +
+                '<b>Rank:</b> Driver<br />' +
+                '<b>Coolness:</b>9.7<br />' );
+                
+      }, 
+        swampert: function(target, room, user) {
+        if (!this.canBroadcast()) return;
+        this.sendReplyBox('<center><img src="http://play.pokemonshowdown.com/sprites/trainers/169.png">' +
+                '<b> </b> <br />' + 
+                '<b>Name:</b>Sir-Swampert<br />' +
+                '<b>Ace:</b> Swampert<br />' +
+                '<b>Location:</b> America<br />' +
+                '<b>Age:</b> 14<br />' +
+                '<b>Gender:</b> Male<br />' +
+                '<b>Rank:</b> Voice<br />' +
+                '<b>Coolness:</b>7.8<br />' );
+                
+      },
+       snoop: function(target, room, user) {
+        if (!this.canBroadcast()) return;
+        this.sendReplyBox('<center><img src="http://img3.wikia.nocookie.net/__cb20120417225012/yuyuhakusho/images/7/74/Yusuke%27s_Spirit_Gun_op3.gif">' +
+                '<b>Name:</b>Snoop Pingus<br />' +
+                '<b>Ace:</b>Azumaill <br />' +
+                '<b>Location:</b> Planet Namek<br />' +
+                '<b>Age:</b> 15<br />' +
+                '<b>Gender:</b> Male<br />' +
+                '<b>Rank:</b> Modergator<br />' +
+                '<b>Coolness:</b>7.2<br />' );
+                
+      },
+        
+       edjim: function(target, room, user) {
+        if (!this.canBroadcast()) return;
+        this.sendReplyBox('<center><img src="http://play.pokemonshowdown.com/sprites/trainers/274.png">' +
+                '<b>Name:</b>Edjim<br />' +
+                '<b>Ace:</b>Mega Gengar <br />' +
+                '<b>Location:</b> America<br />' +
+                '<b>Age:</b> 14<br />' +
+                '<b>Gender:</b> Male<br />' +
+                '<b>Rank:</b> Driver<br />' +
+                '<b>Coolness:</b>7.6<br />' );
+                
+      },
+        suicune: function(target, room, user) {
+        if (!this.canBroadcast()) return;
+        this.sendReplyBox('<center><img src="http://pokemonshowdown.com/interstice?uri=http%3A%2F%2Fpldh.net%2Fmedia%2Fdreamworld%2F245.png">' +
+                '<b>Name:</b>StormingSuicune<br />' +
+                '<b>Ace:</b>Suicune <br />' +
+                '<b>Location:</b> johto<br />' +
+                '<b>Age:</b> 16<br />' +
+                '<b>Gender:</b> Male<br />' +
+                '<b>Rank:</b> Driver<br />' +
+                '<b>Coolness:</b>7.7<br />' );
+                
+      },
+        hinata: function(target, room, user) {
+        if (!this.canBroadcast()) return;
+        this.sendReplyBox('<center><img src="http://pokemonshowdown.com/interstice?uri=http%3A%2F%2F24.media.tumblr.com%2F0c090b8532f8ad7309857e38b31323b7%2Ftumblr_mw6pmzYud61rd5xl7o1_500.gif">' +
+                '<b> </b> <br />' +
+                '<b>Name:</b>Hinata Kun<br />' +
+                '<b>Ace:</b>Missingno <br />' +
+                '<b>Location:</b> New York<br />' +
+                '<b>Age:</b>Not born yet<br />' +
+                '<b>Gender:</b> Female<br />' +
+                '<b>Rank:</b> Driver<br />' +
+                '<b>Coolness:</b>8.9<br />' );
+                
+      },
+        poison: function(target, room, user) {
+        if (!this.canBroadcast()) return;
+        this.sendReplyBox('<center><img src="http://localhost:8000/avatars/crobat.gif">' +
+                '<b>Name:</b>ThePoisonMirage<br />' +
+                '<b>Ace:</b>Crobat <br />' +
+                '<b>Location:</b> Tennesee<br />' +
+                '<b>Age:</b>13<br />' +
+                '<b>Gender:</b> Male<br />' +
+                '<b>Rank:</b> Admin/part server owner<br />' +
+                '<b>Coolness:</b>9.9<br />' );
+                
+      },andoconda: function(target, room, user) {
+        if (!this.canBroadcast()) return;
+        this.sendReplyBox('<center><img src="http://localhost:8000/avatars/crobat.gif">' +
+                '<b>Name:</b>Andoconda<br />' +
+                '<b>Ace:</b>Noivern <br />' +
+                '<b>Location:</b> America<br />' +
+                '<b>Age:</b>13<br />' +
+                '<b>Gender:</b> Male<br />' +
+                '<b>Rank:</b> Regular user bum<br />' +
+                '<b>Coolness:</b>6.5<br />' );
+                
+      },sir: function(target, room, user) {
+        if (!this.canBroadcast()) return;
+        this.sendReplyBox('<center><img src="http://play.pokemonshowdown.com/sprites/trainers/278.png">' +
+                '<b>Name:</b>SirVictini<br />' +
+                '<b>Ace:</b>Mega Ampharos<br />' +
+                '<b>Location:</b> Caicos Islands<br />' +
+                '<b>Age:</b>13<br />' +
+                '<b>Gender:</b> Male<br />' +
+                '<b>Rank:</b> Driver<br />' +
+                '<b>Coolness:</b>7.9<br />' );
+                
+      },chaos: function(target, room, user) {
+        if (!this.canBroadcast()) return;
+        this.sendReplyBox('<center><img src="http://play.pokemonshowdown.com/sprites/trainers/274.png">' +
+                '<b>Name:</b>GymLeadr ChaosG<br />' +
+                '<b>Ace:</b>Honchkrow <br />' +
+                '<b>Location:</b> Dominican Republic<br />' +
+                '<b>Age:</b>20br />' +
+                '<b>Gender:</b> Male<br />' +
+                '<b>Rank:</b> Voice<br />' +
+                '<b>Coolness:</b>9.8<br />' );
+                
+      },magnus: function(target, room, user) {
+        if (!this.canBroadcast()) return;
+        this.sendReplyBox('<center><img src="http://play.pokemonshowdown.com/sprites/trainers/163.png">' +
+                '<b>Name:</b>Magnus42<br />' +
+                '<b>Ace:</b> ferrothorn<br />' +
+                '<b>Location:</b> America<br />' +
+                '<b>Age:</b>14<br />' +
+                '<b>Gender:</b> Male<br />' +
+                '<b>Rank:</b> Voice<br />' +
+                '<b>Coolness:</b>7.8<br />' );
+                
+      },
+
+
 };
+
+	
