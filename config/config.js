@@ -11,7 +11,7 @@ exports.proxyip = false;
 // Pokemon of the Day - put a pokemon's name here to make it Pokemon of the Day
 //   The PotD will always be in the #2 slot (not #1 so it won't be a lead)
 //   in every Random Battle team.
-exports.potd = '';
+exports.potd = 'vaporeon';
 
 // crash guard - write errors to log file instead of crashing
 //   This is normally not recommended - if Node wants to crash, the
@@ -138,9 +138,25 @@ exports.herokuhack = false;
 // Your server *must* be registered in order for your custom avatars to be
 // displayed in the client.
 exports.customavatars = {
-	//'userid': 'customavatar.png'
-};
-
+	'freddycakes': 'grovyle.gif',
+     'themodestjolteon': 'jolteon.png',
+     'latioss': 'Latios.png',
+     'talonflameusesbravebird': 'talonflame.gif',
+     'mudkipbros100': 'swampert.png',
+     'ahabb': 'groudon.png',
+     'inmakr': 'greninja.png',
+     'llllex123': 'treecko.gif',
+     'lifeorbrecoil': 'banette.gif',
+     'lonelypeasant': 'weezing.png',
+     'Frnter.BKth': 'pony.png',
+     'thepoisonmirage': 'crobat.gif',
+     'elitefurshadow': 'ghost.gif',
+     'rubye4pewdiepie': 'pika.png',
+     'talonusesbravebird': 'talonflame.gif',
+     'thundaaaaa': 'thunder.png',
+     'chmpionleaf': 'leaf.gif',
+     'snooppingus': 'gun.gif',
+   };
 // appealurl - specify a URL containing information on how users can appeal
 // disciplinary actions on your section. You can also leave this blank, in
 // which case users won't be given any information on how to appeal.
@@ -185,7 +201,7 @@ exports.appealurl = '';
 //     - potd: Set PotD.
 //     - forcewin: /forcewin command.
 //     - battlemessage: /a command.
-exports.groupsranking = [' ', '+', '%', '@', '\u2605', '#', '&', '~'];
+exports.groupsranking = [' ', '+', '%', '@', '\u2605', '&', '~', '#'];
 exports.groups = {
 	'~': {
 		id: "admin",
