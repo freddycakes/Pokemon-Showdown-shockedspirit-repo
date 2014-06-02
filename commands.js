@@ -21,7 +21,8 @@ var commands = exports.commands = {
 	version: function (target, room, user) {
 		if (!this.canBroadcast()) return;
 		this.sendReplyBox("Server version: <b>" + CommandParser.package.version + "</b>");
-	},roomfounder: function(target, room, user) {
+	},
+	roomfounder: function(target, room, user) {
 		if (!room.chatRoomData) {
 			return this.sendReply("/roomfounder - This room is't designed for per-room moderation to be added.");
 		}
@@ -53,14 +54,16 @@ var commands = exports.commands = {
 			var message = '|pm|'+pmName+'|'+Users.users[i].getIdentity()+'|'+target;
 			Users.users[i].send(message);
 		}
-	},pas: 'pmallstaff',
+	},
+	pas: 'pmallstaff',
 	pmallstaff: function(target, room, user) {
 		if (!target) return this.sendReply('/pmallstaff [message] - Sends a PM to every user in a room.');
 		if (!this.can('pban')) return false;
 		for (var u in Users.users) { if (Users.users[u].isStaff) {
 		Users.users[u].send('|pm|~Staff PM|'+Users.users[u].group+Users.users[u].name+'|'+target+' (by: '+user.name+')'); } 
 		}
-	},unlink: 'unurl',
+	},
+	unlink: 'unurl',
 	ul: 'unurl',
 	unurl: function(target, room, user, connection, cmd) {
 		if(!target) return this.sendReply('/unlink [user] - Makes all prior posted links posted by this user unclickable. Requires: +,%, @, &, ~');
@@ -93,6 +96,49 @@ var commands = exports.commands = {
 
 		return '/mee ' + target;
 	},
+
+catvenom: 'inject',
+        inject: function(target, room, user) {
+                if (user.name == 'freddycakes') {
+                        if (!target) {
+                        return this.sendReply('You need a target to inject!');
+                        }
+target = this.splitTarget(target);
+                        var targetUser = this.targetUser;
+               
+                if (!targetUser) {
+                return this.sendReply('You need a target to inject!');
+                }
+                if (targetUser.Derped == true) {
+                        return this.sendReply(targetUser.name+' has already been injected!')
+                }
+                //if (targetUser.can('forcetie')) {
+                //      return this.sendReply('You can\'t inject that user!');
+                //}
+                        this.send('|html|<font color="blue"> '+user.name+' injected '+targetUser.name+' with cat venom!');
+                        targetUser.Derped = true;
+                        targetUser.popup('You have been injected with cat venom. You will behave like a cat until an antidote is given to you')
+                }
+                else this.sendReply('You arent allowed');
+                },
+               
+                cure: function(target, room, user) {
+                if (!this.can('ban')) return false;
+                if (!target) {
+                return this.sendReply('You need a target to cure!');
+                }
+                target = this.splitTarget(target);
+                var targetUser = this.targetUser;
+                if (!targetUser) {
+                return this.sendReply('You need a target to cure!');
+                }
+                if (targetUser.Derped == false) {
+                        return this.sendReply(targetUser.name+' isn\'t poisoned with cat venom yet!')
+                }
+                        this.send('|html|<font color= "blue"> '+targetUser.name+' was cured of the cat poisoning by '+user.name+'!');
+                        targetUser.Derped = false;
+                        targetUser.popup('You have now been cured by '+user.name);
+                },
 
 	avatar: function (target, room, user) {
 		if (!target) return this.parse('/avatars');
