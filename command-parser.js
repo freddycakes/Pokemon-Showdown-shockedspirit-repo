@@ -273,6 +273,17 @@ function canTalk(user, room, connection, message) {
 		connection.sendTo(room, "You are muted and cannot talk in this room.");
 		return false;
 	}
+	var meow = ['meow', 'purr'];
+	var notmeow = ['a', 'b', 'c', 'd', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'n', 'q', 's', 't', 'v', 'w', 'x', 'y', 'z'];
+	for (var x = 0; x < notmeow.length; x++) {
+	for (var i = 0; i < meow.length; i++) {
+		if (user.Derped) {
+			if (message.toLowerCase().indexOf(meow[i]) === -1 && message.toLowerCase().indexOf(notmeow[x]) !== -1) {
+				connection.sendTO(room, '|html|<b><font color = "blue">You are poisoned with cat venom. You can only behave like a cat, meowing and purring.')
+			}
+		}
+	}
+	}
 	if (room && room.modchat) {
 		if (room.modchat === 'crash') {
 			if (!user.can('ignorelimits')) {
