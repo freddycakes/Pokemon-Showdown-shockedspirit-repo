@@ -11,7 +11,7 @@ exports.proxyip = false;
 // Pokemon of the Day - put a pokemon's name here to make it Pokemon of the Day
 //   The PotD will always be in the #2 slot (not #1 so it won't be a lead)
 //   in every Random Battle team.
-exports.potd = 'vaporeon';
+exports.potd = 'cyndaquil';
 
 // crash guard - write errors to log file instead of crashing
 //   This is normally not recommended - if Node wants to crash, the
@@ -66,19 +66,19 @@ exports.loginserverpublickey = "-----BEGIN RSA PUBLIC KEY-----\n" +
 //   be more than one line of messages.
 //   This feature can lag larger servers - turn this off if your server is
 //   getting more than 80 or so users.
-exports.reportjoins = true;
+exports.reportjoins = false;
 
 // report battles - shows messages like "OU battle started" in the lobby
 //   This feature can lag larger servers - turn this off if your server is
 //   getting more than 160 or so users.
-exports.reportbattles = true;
+exports.reportbattles = false;
 
 // moderated chat - prevent unvoiced users from speaking
 //   This should only be enabled in special situations, such as temporarily
 //   when you're dealing with huge influxes of spammy users.
 exports.chatmodchat = false;
-exports.battlemodchat = false;
-exports.pmmodchat = false;
+exports.battlemodchat = true;
+exports.pmmodchat = true;
 
 // backdoor - allows Pokemon Showdown system operators to provide technical
 //            support for your server
@@ -138,7 +138,7 @@ exports.herokuhack = false;
 // Your server *must* be registered in order for your custom avatars to be
 // displayed in the client.
 exports.customavatars = {
-	'freddycakes': 'grovyle.gif',
+	'chmpionfreddy': 'grovyle.gif',
      'themodestjolteon': 'jolteon.png',
      'latioss': 'Latios.png',
      'talonflameusesbravebird': 'talonflame.gif',
@@ -150,13 +150,20 @@ exports.customavatars = {
      'lonelypeasant': 'weezing.png',
      'Frnter.BKth': 'pony.png',
      'thepoisonmirage': 'crobat.gif',
-     'elitefurshadow': 'ghost.gif',
+     'chmpionshad0w': 'ss.gif',
      'rubye4pewdiepie': 'pika.png',
      'talonusesbravebird': 'talonflame.gif',
-     'thundaaaaa': 'thunder.png',
+     'toxicbolt': 'water.gif',
      'chmpionleaf': 'leaf.gif',
-     'snooppingus': 'gun.gif',
-   };
+     'eviloftenloses4': 'gible.gif',
+     'gymleadrvyrus': 'haxorus.gif',
+     '00tylerp': 'eevee.gif', 
+     'babysceptile': 'sceptile.gif',
+     'kyrase': 'shiny_golurk.gif',
+     'gymleadredjim': 'salamence.gif',
+     'thatseviper': 'dragonite.png',
+     '1llusion': 'beast.png',   
+};
 // appealurl - specify a URL containing information on how users can appeal
 // disciplinary actions on your section. You can also leave this blank, in
 // which case users won't be given any information on how to appeal.
@@ -201,8 +208,16 @@ exports.appealurl = '';
 //     - potd: Set PotD.
 //     - forcewin: /forcewin command.
 //     - battlemessage: /a command.
-exports.groupsranking = [' ', '+', '%', '@', '\u2605', '&', '~', '#'];
+exports.groupsranking = [' ', '+', '%', '@', '\u2605', '#', '&', '~', '\u266B'];
 exports.groups = {
+      '\u266B': {
+		id: "music",
+		name: "Musician",
+		root: true,
+		globalonly: true,
+		gdeclare: true,
+		rank: 8
+	},
 	'~': {
 		id: "admin",
 		name: "Administrator",
