@@ -255,13 +255,6 @@ exports.Formats = [
 		}
 	},
 	{
-		name: "OU Theorymon",
-		section: "OM of the Month",
-
-		mod: 'theorymon',
-		ruleset: ['OU']
-	},
-	{
 		name: "CAP",
 		section: "Other Metagames",
 
@@ -274,13 +267,6 @@ exports.Formats = [
 
 		ruleset: ['RU (beta)'],
 		banlist: ['RU', 'BL3']
-	},
-	{
-		name: "Challenge Cup",
-		section: "Other Metagames",
-
-		team: 'randomCC',
-		ruleset: ['Pokemon', 'HP Percentage Mod']
 	},
 	{
 		name: "Hackmons",
@@ -307,7 +293,7 @@ exports.Formats = [
 		},
 		ruleset: ['Pokemon', 'Standard'],
 		banlist: ['Unreleased', 'Illegal', 'Focus Sash', 'Kangaskhanite', 'Soul Dew',
-			'Destiny Bond', 'Explosion', 'Final Gambit', 'Healing Wish', 'Lunar Dance', 'Memento', 'Perish Song', 'Selfdestruct',
+			'Destiny Bond', 'Explosion', 'Final Gambit', 'Healing Wish', 'Lunar Dance', 'v-create', 'Memento', 'Perish Song', 'Selfdestruct',
 			'Arceus', 'Blaziken', 'Darkrai', 'Deoxys', 'Deoxys-Attack', 'Dialga', 'Giratina', 'Giratina-Origin', 'Groudon', 'Ho-Oh', 'Kyogre', 'Kyurem-White', 'Lugia', 'Mewtwo', 'Palkia', 'Rayquaza', 'Reshiram', 'Shaymin-Sky', 'Xerneas', 'Yveltal', 'Zekrom'
 		]
 	},
@@ -315,7 +301,8 @@ exports.Formats = [
 		name: "OU Monotype",
 		section: "Other Metagames",
 
-		ruleset: ['OU', 'Same Type Clause']
+		ruleset: ['OU', 'Same Type Clause'],
+           banlixt: ['talonflame', '', '', 'rotom-heat', 'recover', 'will-o-wisp', 'focus sash']
 	},
 
 	{
@@ -351,26 +338,6 @@ exports.Formats = [
 		]
 	},
 	{
-		name: "Ability Exchange",
-		section: "Other Metagames",
-
-		searchShow: false,
-		ruleset: ['Pokemon', 'Ability Exchange Pokemon', 'Sleep Clause Mod', 'Species Clause', 'OHKO Clause', 'Moody Clause', 'Evasion Moves Clause', 'HP Percentage Mod', 'Team Preview'],
-		banlist: ['Unreleased', 'Illegal', 'Ignore Illegal Abilities', 'Uber', 'Soul Dew', 'Gengarite', 'Kangaskhanite', 'Lucarionite', 'Swagger', 'Slaking', 'Regigigas']
-	},
-	{
-		name: "Ability Shift",
-		section: "Other Metagames",
-
-		mod: 'abilityshift',
-		searchShow: false,
-		ruleset: ['Pokemon', 'Standard', 'Team Preview'],
-		banlist: ['Ampharosite', 'Gyaradosite',
-			'Arceus', 'Darkrai', 'Deoxys', 'Deoxys-Attack', 'Dialga', 'Giratina', 'Giratina-Origin', 'Groudon', 'Ho-Oh', 'Kyurem-White',
-			'Lugia', 'Meloetta', 'Mewtwo', 'Palkia', 'Rayquaza', 'Regigigas', 'Reshiram', 'Slaking', 'Xerneas', 'Zekrom'
-		]
-	},
-	{
 		name: "Alphabet Cup",
 		section: "Other Metagames",
 
@@ -397,15 +364,6 @@ exports.Formats = [
 		banlist: ['DeepSeaScale', 'DeepSeaTooth', 'Eviolite', 'Light Ball', 'Mawilite', 'Medichamite', 'Soul Dew', 'Thick Club', 'Huge Power', 'Pure Power', 'Shedinja', 'Smeargle']
 	},
 	{
-		name: "Gen-NEXT OU",
-		section: "Other Metagames",
-
-		mod: 'gennext',
-		searchShow: false,
-		ruleset: ['Pokemon', 'Standard NEXT', 'Team Preview'],
-		banlist: ['Uber']
-	},
-	{
 		name: "Middle Cup",
 		section: "Other Metagames",
 
@@ -427,16 +385,6 @@ exports.Formats = [
 
 		searchShow: false,
 		ruleset: ['OU']
-	},
-	{
-		name: "[Gen 5] Glitchmons",
-		section: "Other Metagames",
-
-		mod: 'gen5',
-		searchShow: false,
-		mimicGlitch: true,
-		ruleset: ['Pokemon', 'Team Preview', 'HP Percentage Mod'],
-		banlist: ['Illegal', 'Unreleased']
 	},
 
 	// BW2 Singles
@@ -533,173 +481,6 @@ exports.Formats = [
 		ruleset: ['Team Preview']
 	},
 
-	// BW2 Doubles
-	///////////////////////////////////////////////////////////////////
-
-	{
-		name: "[Gen 5] Smogon Doubles",
-		section: 'BW2 Doubles',
-		column: 2,
-
-		mod: 'gen5',
-		gameType: 'doubles',
-		ruleset: ['Pokemon', 'Standard', 'Evasion Abilities Clause', 'Team Preview'],
-		banlist: ['Unreleased', 'Illegal', 'Dark Void', 'Soul Dew', 'Sky Drop',
-			'Mewtwo',
-			'Lugia',
-			'Ho-Oh',
-			'Kyogre',
-			'Groudon',
-			'Rayquaza',
-			'Dialga',
-			'Palkia',
-			'Giratina', 'Giratina-Origin',
-			'Arceus',
-			'Reshiram',
-			'Zekrom',
-			'Kyurem-White'
-		]
-	},
-	{
-		name: "[Gen 5] GBU Doubles",
-		section: 'BW2 Doubles',
-
-		mod: 'gen5',
-		gameType: 'doubles',
-		onBegin: function () {
-			this.debug('cutting down to 4');
-			this.p1.pokemon = this.p1.pokemon.slice(0, 4);
-			this.p1.pokemonLeft = this.p1.pokemon.length;
-			this.p2.pokemon = this.p2.pokemon.slice(0, 4);
-			this.p2.pokemonLeft = this.p2.pokemon.length;
-		},
-		maxForcedLevel: 50,
-		ruleset: ['Pokemon', 'Standard GBU', 'Team Preview VGC'],
-		banlist: ['Sky Drop', 'Dark Void']
-	},
-	{
-		name: "[Gen 5] Doubles Custom Game",
-		section: 'BW2 Doubles',
-
-		mod: 'gen5',
-		gameType: 'doubles',
-		searchShow: false,
-		canUseRandomTeam: true,
-		debug: true,
-		maxLevel: 9999,
-		defaultLevel: 100,
-		// no restrictions, for serious (other than team preview)
-		ruleset: ['Team Preview']
-	},
-
-	// Past Generations
-	///////////////////////////////////////////////////////////////////
-
-	{
-		name: "[Gen 4] OU (beta)",
-		section: "Past Generations",
-		column: 2,
-
-		mod: 'gen4',
-		ruleset: ['Pokemon', 'Standard'],
-		banlist: ['Uber']
-	},
-	{
-		name: "[Gen 4] Ubers (beta)",
-		section: "Past Generations",
-
-		mod: 'gen4',
-		ruleset: ['Pokemon', 'Standard'],
-		banlist: ['Arceus']
-	},
-	{
-		name: "[Gen 4] UU (beta)",
-		section: "Past Generations",
-
-		mod: 'gen4',
-		ruleset: ['Pokemon', 'Standard'],
-		banlist: ['Uber', 'OU', 'BL']
-	},
-	{
-		name: "[Gen 4] LC (beta)",
-		section: "Past Generations",
-
-		mod: 'gen4',
-		maxLevel: 5,
-		ruleset: ['Pokemon', 'Standard', 'Little Cup'],
-		banlist: ['Berry Juice', 'DeepSeaTooth', 'Dragon Rage', 'Sonic Boom', 'Meditite', 'Misdreavus', 'Murkrow', 'Scyther', 'Sneasel', 'Tangela', 'Yanma']
-	},
-	{
-		name: "[Gen 4] Custom Game",
-		section: "Past Generations",
-
-		mod: 'gen4',
-		searchShow: false,
-		debug: true,
-		ruleset: ['Pokemon', 'HP Percentage Mod']
-	},
-	{
-		name: "[Gen 3] OU (beta)",
-		section: "Past Generations",
-
-		mod: 'gen3',
-		ruleset: ['Pokemon', 'Standard'],
-		banlist: ['Uber', 'Smeargle + Ingrain']
-	},
-	{
-		name: "[Gen 3] Custom Game",
-		section: "Past Generations",
-
-		mod: 'gen3',
-		searchShow: false,
-		debug: true,
-		ruleset: ['Pokemon', 'HP Percentage Mod']
-	},
-	{
-		name: "[Gen 2] OU (beta)",
-		section: "Past Generations",
-
-		mod: 'gen2',
-		debug: true,
-		ruleset: ['Pokemon', 'Standard'],
-		banlist: ['Uber', 'Mean Look + Hypnosis + Perish Song']
-	},
-	{
-		name: "[Gen 2] Custom Game",
-		section: "Past Generations",
-
-		mod: 'gen2',
-		searchShow: false,
-		debug: true,
-		ruleset: ['Pokemon', 'HP Percentage Mod']
-	},
-	{
-		name: "[Gen 1] OU (beta)",
-		section: "Past Generations",
-
-		mod: 'gen1',
-		ruleset: ['Pokemon', 'Standard'],
-		banlist: ['Uber',
-			'Kakuna + Poison Sting + Harden', 'Kakuna + String Shot + Harden',
-			'Beedrill + Poison Sting + Harden', 'Beedrill + String Shot + Harden',
-			'Nidoking + Fury Attack + Thrash',
-			'Exeggutor + Poison Powder + Stomp', 'Exeggutor + Sleep Powder + Stomp', 'Exeggutor + Stun Spore + Stomp',
-			'Eevee + Tackle + Growl',
-			'Vaporeon + Tackle + Growl',
-			'Jolteon + Tackle + Growl', 'Jolteon + Focus Energy + Thunder Shock',
-			'Flareon + Tackle + Growl', 'Flareon + Focus Energy + Ember'
-		]
-	},
-	{
-		name: "[Gen 1] Custom Game",
-		section: "Past Generations",
-
-		mod: 'gen1',
-		searchShow: false,
-		debug: true,
-		ruleset: ['Pokemon', 'HP Percentage Mod']
-	},
-
        //Server Exclusives
 	//////////////////////////////////////////////////////////             /////////
  
@@ -748,7 +529,7 @@ exports.Formats = [
 
                 ruleset: ['Pokemon', 'Standard pokebank', 'Sleep Clause Mod', 'Species Clause', 'Unreleased','OHKO Clause', 'Moody Clause', 'Evasion Moves Clause', 'Endless Battle Clause', 'HP Percentage Mod', 'Team Preview'],
 
-                banlist: ['trick room', 'choice scarf','shaymin-sky', 'LC', 'MC', 'Ubers', 'Baton Pass', 'Speed Boost', 'Kangaskhanite', 'Yanmega', 'Abomasnow', 'Arcanine', 'Azumarill', 'Bisharp', 'Blastiose', 'Claydol', 'Bronzong', 'chandelure', 'cofagrigus', 'Darmanitan', 'Dusclops', 'Dusknoir', 'Empoleon', 'gligar', 'heracross', 'hitmontop', 'honchkrow', 'houndoom', 'Kingdra', 'krookodile', 'machamp', 'nidoking', 'nidoqueen', 'porygon-z', 'porygon2', 'Registeel', 'regirock', 'rhyperior', 'roserade', 'rotom-H', 'sableye', 'scrafty', 'sharpedo', 'slowbro', 'snorlax', 'suicune', 'swampert', 'Togekiss', 'umbreon', 'xatu', 'alomomola', 'altaria', 'ampharos', 'arbok', 'ariados', 'armaldo', 'articuno', 'audino', 'banette', 'basculin', 'basculin-b', 'bastiodon', 'beartic', 'beautifly', 'beedrill', 'beheeyem', 'bellossom', 'bibarel', 'braviary', 'butterfree', 'cacturne', 'camerupt', 'carnivine', 'carracosta', 'castform', 'chatot', 'cherrim', 'chimecho', 'combusken', 'corsola', 'cradily', 'delcatty', 'delibird', 'dewgong', 'ditto', 'dragonair', 'drifblim', 'dunsparce', 'duosion', 'dustox', 'eelektross', 'exeggutor', 'exploud', 'flareon', 'fraxure', 'furret', 'gabite', 'garbodor', 'gardevoir', 'gigalith', 'girafarig', 'glaceon', 'glalie', 'golbat', 'golduck', 'golem', 'golurk', 'gorebyss', 'gothorita', 'granbull', 'grumpig', 'gurdurr', 'haunter', 'heatmor', 'huntail', 'hypno', 'illumise', 'jumpluff', 'jynx', 'kangaskhan', 'kecleon', 'kingler', 'klang', 'kricketune', 'lairon', 'lampent', 'lapraas', 'leafeon', 'leavanny', 'ledian', 'lickilicky', 'ludicolo', 'lumineon', 'lunatone', 'luvdisc', 'luxray', 'machoke', 'magmar', 'mandibuzz', 'mantine', 'maractus', 'marowak', 'masquerain', 'mawile', 'meganium', 'metang', 'mightyena', 'minun', 'misdreavus', 'mothim', 'mr.mime', 'muk', 'munchlax', 'murkrow', 'musharna', 'natu', 'noctowl', 'octillery', 'pachirisu', 'parasect', 'pelipper', 'phoine', 'pidgeot', 'pikachu', 'piloswine', 'pinsir', 'plusle', 'primeape', 'probopass', 'rampardos', 'raticate', 'regice', 'relicanth', 'roselia', 'rotom-f', 'rotom-s', 'samurott', 'sawk', 'sawsbuck', 'seadra', 'seaking', 'seismitoad', 'seviper', 'shedninja', 'shelgon', 'shiftry', 'shuckle', 'skuntank', 'solrock', 'spinda', 'stantler', 'stoutland', 'stunfisk', 'sudowoodo', 'sunflora', 'swalot', 'swanna', 'tangela', 'throh', 'togetic', 'torkoal', 'torterra', 'tropius', 'unfezant', 'unown', 'ursaring', 'vanilluxe', 'vespiquen', 'victreebel', 'vigoroth', 'vileplume', 'volbeat', 'wailord', 'walrein', 'wartortle', 'watchog', 'weezing', 'whiscash', 'wigglytuff', 'wormadam', 'wormadam-g', 'wormadam-s', 'zangoose', 'zebstrika', 'zweilous', 'absol', 'aggron', 'amoonguss', 'bouffalant', 'clefable', 'crawdaunt', 'crustle', 'drapion', 'druddigon', 'durant', 'dusknoir', 'electivire', 'emboar', 'escavalier', 'feraligatr', 'ferroseed', 'gallade', 'hariyama', 'hitmonchan', 'hitmonlee', 'kabutops', 'klinklang', 'lanturn', 'lilligant', 'magmortar', 'magneton', 'medicham', 'mespirit', 'moltres', 'omastar', 'poliwrath', 'quagsire', 'qwilfish', 'rhydon', 'rotom', 'rotom-c', 'sandslash', 'sigilyph', 'slowking', 'smeargle', 'spiritomb', 'steelix', 'tangrowth', 'blissey', 'breloom', 'cloyster', 'conkeldurr', 'donphan', 'dragonite', 'ferrothorn', 'gastrodon', 'gliscor', 'gyardos', 'haxorus', 'heatran', 'hippowdon', 'hydreigon', 'jellicent', 'kyurem-black', 'landorus-therian', 'lucario', 'magnezone', 'mamoswine', 'metagross', 'politoed', 'reuniclus', 'rotom-wash', 'scizor', 'skarmory', 'toxicroak', 'tyranitar', 'vaporeon', 'venusaur', 'mewtwo', 'aegislash', 'charizard', 'aerodactyl', 'garchomp', 'latias', 'latios', 'talonflame', 'greninja', 'sceptile', 'gengar', 'serperior', 'weavile', 'landorus', 'thundurus', 'typlohsion', 'milotic', 'whimiscott', 'alakazam', 'dugtrio', 'infernape', 'jirachi', 'vicitni', 'manaphy', 'ninetales', 'tentacruel', 'thundurus-therian', 'starmie', 'poison point']
+                banlist: ['trick room', 'choice scarf','shaymin-sky', 'LC', 'MC', 'Ubers', 'Baton Pass', 'Speed Boost', 'Kangaskhanite', 'Yanmega', 'Abomasnow', 'Arcanine', 'Azumarill', 'Bisharp', 'Blastiose', 'Claydol', 'Bronzong', 'chandelure', 'cofagrigus', 'Darmanitan', 'Dusclops', 'Dusknoir', 'Empoleon', 'gligar', 'heracross', 'hitmontop', 'honchkrow', 'houndoom', 'Kingdra', 'krookodile', 'machamp', 'nidoking', 'nidoqueen', 'porygon-z', 'porygon2', 'Registeel', 'regirock', 'rhyperior', 'roserade', 'rotom-H', 'sableye', 'scrafty', 'sharpedo', 'slowbro', 'snorlax', 'suicune', 'swampert', 'Togekiss', 'umbreon', 'xatu', 'alomomola', 'altaria', 'ampharos', 'arbok', 'ariados', 'armaldo', 'articuno', 'audino', 'banette', 'basculin', 'basculin-b', 'bastiodon', 'beartic', 'beautifly', 'beedrill', 'beheeyem', 'bellossom', 'bibarel', 'braviary', 'butterfree', 'cacturne', 'camerupt', 'carnivine', 'carracosta', 'castform', 'chatot', 'cherrim', 'chimecho', 'combusken', 'corsola', 'cradily', 'delcatty', 'delibird', 'dewgong', 'ditto', 'dragonair', 'drifblim', 'dunsparce', 'duosion', 'dustox', 'eelektross', 'exeggutor', 'exploud', 'flareon', 'fraxure', 'furret', 'gabite', 'garbodor', 'gardevoir', 'gigalith', 'girafarig', 'glaceon', 'glalie', 'golbat', 'golduck', 'golem', 'golurk', 'gorebyss', 'gothorita', 'granbull', 'grumpig', 'gurdurr', 'haunter', 'heatmor', 'huntail', 'hypno', 'illumise', 'jumpluff', 'jynx', 'kangaskhan', 'kecleon', 'kingler', 'klang', 'kricketune', 'lairon', 'lampent', 'lapraas', 'leafeon', 'leavanny', 'ledian', 'lickilicky', 'ludicolo', 'lumineon', 'lunatone', 'luvdisc', 'luxray', 'machoke', 'magmar', 'mandibuzz', 'mantine', 'maractus', 'marowak', 'masquerain', 'mawile', 'meganium', 'metang', 'mightyena', 'minun', 'misdreavus', 'mothim', 'mr.mime', 'muk', 'munchlax', 'murkrow', 'musharna', 'natu', 'noctowl', 'octillery', 'pachirisu', 'parasect', 'pelipper', 'phoine', 'pidgeot', 'pikachu', 'piloswine', 'pinsir', 'plusle', 'primeape', 'probopass', 'rampardos', 'raticate', 'regice', 'relicanth', 'roselia', 'rotom-f', 'rotom-s', 'samurott', 'sawk', 'sawsbuck', 'seadra', 'seaking', 'seismitoad', 'seviper', 'shedninja', 'shelgon', 'shiftry', 'shuckle', 'skuntank', 'solrock', 'spinda', 'stantler', 'stoutland', 'stunfisk', 'sudowoodo', 'sunflora', 'swalot', 'swanna', 'tangela', 'throh', 'togetic', 'torkoal', 'torterra', 'tropius', 'unfezant', 'unown', 'ursaring', 'vanilluxe', 'vespiquen', 'victreebel', 'vigoroth', 'vileplume', 'volbeat', 'wailord', 'walrein', 'wartortle', 'watchog', 'weezing', 'whiscash', 'wigglytuff', 'wormadam', 'wormadam-g', 'wormadam-s', 'zangoose', 'zebstrika', 'zweilous', 'absol', 'aggron', 'amoonguss', 'bouffalant', 'clefable', 'crawdaunt', 'crustle', 'drapion', 'druddigon', 'durant', 'dusknoir', 'electivire', 'emboar', 'escavalier', 'feraligatr', 'ferroseed', 'gallade', 'hariyama', 'hitmonchan', 'hitmonlee', 'kabutops', 'klinklang', 'lanturn', 'lilligant', 'magmortar', 'magneton', 'medicham', 'mespirit', 'moltres', 'omastar', 'poliwrath', 'quagsire', 'qwilfish', 'rhydon', 'rotom', 'rotom-c', 'sandslash', 'sigilyph', 'slowking', 'smeargle', 'spiritomb', 'steelix', 'tangrowth', 'blissey', 'breloom', 'cloyster', 'conkeldurr', 'donphan', 'dragonite', 'ferrothorn', 'gastrodon', 'gliscor', 'gyardos', 'haxorus', 'heatran', 'hippowdon', 'hydreigon', 'jellicent', 'kyurem-black', 'landorus-therian', 'lucario', 'magnezone', 'mamoswine', 'metagross', 'politoed', 'reuniclus', 'rotom-wash', 'scizor', 'skarmory', 'toxicroak', 'tyranitar', 'vaporeon', 'venusaur', 'mewtwo', 'aegislash',  'poison point']
 
         },
         {
@@ -777,7 +558,7 @@ exports.Formats = [
 	   ruleset: ['OU', 'Same Type Clause']	
 	},
         {
-		name: "Bananna vs Apple",
+		name: "WTF",
 		section: "Server Exclusives",
                 column: 2,
 
@@ -792,11 +573,11 @@ exports.Formats = [
 		}
 	},
         {
-		name: "EEVEE Only Beta",
+		name: "EEVEE Evolutions",
 		section: "Server Exclusives",
  
            ruleset: ['Pokemon', 'Standard pokebank', 'Sleep Clause Mod', 'Species Clause', 'Unreleased','OHKO Clause', 'Moody Clause', 'Evasion Moves Clause', 'Endless Battle Clause', 'HP Percentage Mod', 'Team Preview'],
-           banlist: ['trick room', 'choice scarf','shaymin-sky', 'LC', 'MC', 'Ubers', 'Baton Pass', 'Speed Boost', 'Kangaskhanite', 'Yanmega', 'Abomasnow', 'Arcanine', 'Azumarill', 'Bisharp', 'Blastiose', 'Claydol', 'Bronzong', 'chandelure', 'cofagrigus', 'Darmanitan', 'Dusclops', 'Dusknoir', 'Empoleon', 'gligar', 'heracross', 'hitmontop', 'honchkrow', 'houndoom', 'Kingdra', 'krookodile', 'machamp', 'nidoking', 'nidoqueen', 'porygon-z', 'porygon2', 'Registeel', 'regirock', 'rhyperior', 'roserade', 'rotom-H', 'sableye', 'scrafty', 'sharpedo', 'slowbro', 'snorlax', 'suicune', 'swampert', 'Togekiss', 'xatu', 'alomomola', 'altaria', 'ampharos', 'arbok', 'ariados', 'armaldo', 'articuno', 'audino', 'banette', 'basculin', 'basculin-b', 'bastiodon', 'beartic', 'beautifly', 'beedrill', 'beheeyem', 'bellossom', 'bibarel', 'braviary', 'butterfree', 'cacturne', 'camerupt', 'carnivine', 'carracosta', 'castform', 'chatot', 'cherrim', 'chimecho', 'combusken', 'corsola', 'cradily', 'delcatty', 'delibird', 'dewgong', 'ditto', 'dragonair', 'drifblim', 'dunsparce', 'duosion', 'dustox', 'eelektross', 'exeggutor', 'exploud', 'fraxure', 'furret', 'gabite', 'garbodor', 'gardevoir', 'gigalith', 'girafarig', 'glalie', 'golbat', 'golduck', 'golem', 'golurk', 'gorebyss', 'gothorita', 'granbull', 'grumpig', 'gurdurr', 'haunter', 'heatmor', 'huntail', 'hypno', 'illumise', 'jumpluff', 'jynx', 'kangaskhan', 'kecleon', 'kingler', 'klang', 'kricketune', 'lairon', 'lampent', 'lapraas', 'leavanny', 'ledian', 'lickilicky', 'ludicolo', 'lumineon', 'lunatone', 'luvdisc', 'luxray', 'machoke', 'magmar', 'mandibuzz', 'mantine', 'maractus', 'marowak', 'masquerain', 'mawile', 'meganium', 'metang', 'mightyena', 'minun', 'misdreavus', 'mothim', 'mr.mime', 'muk', 'munchlax', 'murkrow', 'musharna', 'natu', 'noctowl', 'octillery', 'pachirisu', 'parasect', 'pelipper', 'phoine', 'pidgeot', 'pikachu', 'piloswine', 'pinsir', 'plusle', 'primeape', 'probopass', 'rampardos', 'raticate', 'regice', 'relicanth', 'roselia', 'rotom-f', 'rotom-s', 'samurott', 'sawk', 'sawsbuck', 'seadra', 'seaking', 'seismitoad', 'seviper', 'shedninja', 'shelgon', 'shiftry', 'shuckle', 'skuntank', 'solrock', 'spinda', 'stantler', 'stoutland', 'stunfisk', 'sudowoodo', 'sunflora', 'swalot', 'swanna', 'tangela', 'throh', 'togetic', 'torkoal', 'torterra', 'tropius', 'unfezant', 'unown', 'ursaring', 'vanilluxe', 'vespiquen', 'victreebel', 'vigoroth', 'vileplume', 'volbeat', 'wailord', 'walrein', 'wartortle', 'watchog', 'weezing', 'whiscash', 'wigglytuff', 'wormadam', 'wormadam-g', 'wormadam-s', 'zangoose', 'zebstrika', 'zweilous', 'absol', 'aggron', 'amoonguss', 'bouffalant', 'clefable', 'crawdaunt', 'crustle', 'drapion', 'druddigon', 'durant', 'dusknoir', 'electivire', 'emboar', 'escavalier', 'feraligatr', 'ferroseed', 'gallade', 'hariyama', 'hitmonchan', 'hitmonlee', 'kabutops', 'klinklang', 'lanturn', 'lilligant', 'magmortar', 'magneton', 'medicham', 'mespirit', 'moltres', 'omastar', 'poliwrath', 'quagsire', 'qwilfish', 'rhydon', 'rotom', 'rotom-c', 'sandslash', 'sigilyph', 'slowking', 'smeargle', 'spiritomb', 'steelix', 'tangrowth', 'blissey', 'breloom', 'cloyster', 'conkeldurr', 'donphan', 'dragonite', 'ferrothorn', 'gastrodon', 'gliscor', 'gyardos', 'haxorus', 'heatran', 'hippowdon', 'hydreigon', 'jellicent', 'kyurem-black', 'landorus-therian', 'lucario', 'magnezone', 'mamoswine', 'metagross', 'politoed', 'reuniclus', 'rotom-w', 'scizor', 'skarmory', 'toxicroak', 'tyranitar', 'venusaur', 'mewtwo', 'aegislash']
+           banlist: ['trick room', 'choice scarf','shaymin-sky', 'LC', 'MC', 'Ubers', 'Baton Pass', 'Speed Boost', 'Kangaskhanite', 'Yanmega', 'Abomasnow', 'Arcanine', 'Azumarill', 'Bisharp', 'Blastiose', 'Claydol', 'Bronzong', 'chandelure', 'cofagrigus', 'Darmanitan', 'Dusclops', 'Dusknoir', 'Empoleon', 'gligar', 'heracross', 'hitmontop', 'honchkrow', 'houndoom', 'Kingdra', 'krookodile', 'machamp', 'nidoking', 'nidoqueen', 'porygon-z', 'porygon2', 'Registeel', 'regirock', 'rhyperior', 'roserade', 'rotom-H', 'sableye', 'scrafty', 'sharpedo', 'slowbro', 'snorlax', 'suicune', 'swampert', 'Togekiss', 'xatu', 'alomomola', 'altaria', 'ampharos', 'arbok', 'ariados', 'armaldo', 'articuno', 'audino', 'banette', 'basculin', 'basculin-b', 'bastiodon', 'beartic', 'beautifly', 'beedrill', 'beheeyem', 'bellossom', 'bibarel', 'braviary', 'butterfree', 'cacturne', 'camerupt', 'carnivine', 'carracosta', 'castform', 'chatot', 'cherrim', 'chimecho', 'combusken', 'corsola', 'cradily', 'delcatty', 'delibird', 'dewgong', 'ditto', 'dragonair', 'drifblim', 'dunsparce', 'duosion', 'dustox', 'eelektross', 'exeggutor', 'exploud', 'fraxure', 'furret', 'gabite', 'garbodor', 'gardevoir', 'gigalith', 'girafarig', 'glalie', 'golbat', 'golduck', 'golem', 'golurk', 'gorebyss', 'gothorita', 'granbull', 'grumpig', 'gurdurr', 'haunter', 'heatmor', 'huntail', 'hypno', 'illumise', 'jumpluff', 'jynx', 'kangaskhan', 'kecleon', 'kingler', 'klang', 'kricketune', 'lairon', 'lampent', 'lapraas', 'leavanny', 'ledian', 'lickilicky', 'ludicolo', 'lumineon', 'lunatone', 'luvdisc', 'luxray', 'machoke', 'magmar', 'mandibuzz', 'mantine', 'maractus', 'marowak', 'masquerain', 'mawile', 'meganium', 'metang', 'mightyena', 'minun', 'misdreavus', 'mothim', 'mr.mime', 'muk', 'munchlax', 'murkrow', 'musharna', 'natu', 'noctowl', 'octillery', 'pachirisu', 'parasect', 'pelipper', 'phoine', 'pidgeot', 'pikachu', 'piloswine', 'pinsir', 'plusle', 'primeape', 'probopass', 'rampardos', 'raticate', 'regice', 'relicanth', 'roselia', 'rotom-f', 'rotom-s', 'samurott', 'sawk', 'sawsbuck', 'seadra', 'seaking', 'seismitoad', 'seviper', 'shedninja', 'shelgon', 'shiftry', 'shuckle', 'skuntank', 'solrock', 'spinda', 'stantler', 'stoutland', 'stunfisk', 'sudowoodo', 'sunflora', 'swalot', 'swanna', 'tangela', 'throh', 'togetic', 'torkoal', 'torterra', 'tropius', 'unfezant', 'unown', 'ursaring', 'vanilluxe', 'vespiquen', 'victreebel', 'vigoroth', 'vileplume', 'volbeat', 'wailord', 'walrein', 'wartortle', 'watchog', 'weezing', 'whiscash', 'wigglytuff', 'wormadam', 'wormadam-g', 'wormadam-s', 'zangoose', 'zebstrika', 'zweilous', 'absol', 'aggron', 'amoonguss', 'bouffalant', 'clefable', 'crawdaunt', 'crustle', 'drapion', 'druddigon', 'durant', 'dusknoir', 'electivire', 'emboar', 'escavalier', 'feraligatr', 'ferroseed', 'gallade', 'hariyama', 'hitmonchan', 'hitmonlee', 'kabutops', 'klinklang', 'lanturn', 'lilligant', 'magmortar', 'magneton', 'medicham', 'mespirit', 'moltres', 'omastar', 'poliwrath', 'quagsire', 'qwilfish', 'rhydon', 'rotom', 'rotom-c', 'sandslash', 'sigilyph', 'slowking', 'smeargle', 'spiritomb', 'steelix', 'tangrowth', 'blissey', 'breloom', 'cloyster', 'conkeldurr', 'donphan', 'dragonite', 'ferrothorn', 'gastrodon', 'gliscor', 'gyardos', 'haxorus', 'heatran', 'hippowdon', 'hydreigon', 'jellicent', 'kyurem-black', 'landorus-therian', 'lucario', 'magnezone', 'mamoswine', 'metagross', 'politoed', 'reuniclus', 'rotom-w', 'scizor', 'skarmory', 'toxicroak', 'tyranitar', 'venusaur', 'mewtwo', 'aegislash', 'toxic', 'thunder wave', 'will-o-wisp', 'confuse ray', 'hypnosis', 'spore']
 
         },
         {
@@ -811,17 +592,10 @@ exports.Formats = [
                     },
 		maxLevel: 5,
 		ruleset: ['Pokemon', 'Standard', 'Team Preview', 'Little Cup'],
-		banlist: ['Sonicboom', 'Dragon Rage', 'Scyther', 'Sneasel', 'Yanma', 'Tangela', 'Swirlix', 'Gligar']
+		banlist: ['Sonicboom', 'Dragon Rage', 'Scyther', 'Sneasel', 'Yanma', 'Tangela', 'Swirlix', 'Gligar', 'recycle']
 	},
-        {
-		name: "Random Monotype",
-		section: "Server Exclusives",
-
-		team: 'randommonotype',
-		ruleset: ['Pokemon', 'Sleep Clause Mod', 'HP Percentage Mod']
-	},
-        {
-                name: "Ace Tournament",
+     {
+                name: "King of Snores",
 		section: 'Server Exclusives',
 
 		onBegin: function () {
@@ -832,11 +606,85 @@ exports.Formats = [
 		},
 		ruleset: ['Pokemon', 'Standard'],
 		banlist: ['Unreleased', 'Illegal', 'Focus Sash', 'Kangaskhanite', 'Soul Dew',
-			'Destiny Bond', 'Explosion', 'Final Gambit', 'Healing Wish', 'Lunar Dance', 'Memento', 'Perish Song', 'Selfdestruct',
+			'Destiny Bond', 'Explosion', 'Final Gambit', 'Healing Wish', 'Lunar Dance', 'v-create', 'Memento', 'Perish Song', 'Selfdestruct',
 			'Arceus', 'Blaziken', 'Darkrai', 'Deoxys', 'Deoxys-Attack', 'Dialga', 'Giratina', 'Giratina-Origin', 'Groudon', 'Ho-Oh', 'Kyogre', 'Kyurem-White', 'Lugia', 'Mewtwo', 'Palkia', 'Rayquaza', 'Reshiram', 'Shaymin-Sky', 'Xerneas', 'Yveltal', 'Zekrom', 'kyurem-black', 'focus band', 'sturdy', 'mega stones'
 		]
-	},
-	
-    
+	},  
+        {
+		name: "2 vs 2",
+		section: "Server Exclusives",
 
-];
+		gameType: 'doubles',
+		onBegin: function () {
+			this.debug('cutting down to 2');
+			this.p1.pokemon = this.p1.pokemon.slice(0, 2);
+			this.p1.pokemonLeft = this.p1.pokemon.length;
+			this.p2.pokemon = this.p2.pokemon.slice(0, 2);
+			this.p2.pokemonLeft = this.p2.pokemon.length;
+		},
+		ruleset: ['Pokemon', 'Standard GBU'],
+		validateTeam: function (team, format) {
+			if (team.length < 2) return ['You must bring at least 2 Pokemon.'];
+		}
+	},
+  
+        {
+		name: "3 vs 3",
+		section: "Server Exclusives",
+                
+		onBegin: function () {
+			this.debug('cutting down to 3');
+			this.p1.pokemon = this.p1.pokemon.slice(0, 3);
+			this.p1.pokemonLeft = this.p1.pokemon.length;
+			this.p2.pokemon = this.p2.pokemon.slice(0, 3);
+			this.p2.pokemonLeft = this.p2.pokemon.length;
+		},
+		ruleset: ['Pokemon', 'Standard'],
+		banlist: ['Unreleased', 'Illegal', 'Focus Sash', 'Kangaskhanite', 'Soul Dew',
+			'Destiny Bond', 'Explosion', 'Final Gambit', 'Healing Wish', 'Lunar Dance', 'v-create', 'Memento', 'Perish Song', 'Selfdestruct',
+			'Arceus', 'Blaziken', 'Darkrai', 'Deoxys', 'Deoxys-Attack', 'Dialga', 'Giratina', 'Giratina-Origin', 'Groudon', 'Ho-Oh', 'Kyogre', 'Kyurem-White', 'Lugia', 'Mewtwo', 'Palkia', 'Rayquaza', 'Reshiram', 'Shaymin-Sky', 'Xerneas', 'Yveltal', 'Zekrom'
+		],
+		validateTeam: function (team, format) {
+			if (team.length < 3) return ['You must bring at least 3 Pokemon.'];
+                 }
+	}, {
+		name: "Mega Stones",
+		section: "Server Exclusives",
+
+		ruleset: ['Pokemon', 'pokebank', 'Team Preview'],
+		banlist: ['Uber', 'latios-mega', 'latias-mega', 'air-balloon', 'focus sash', 'choice-scarf', 'choice-band', 'life orb', 'sitrus-berry', 'leftovers', 'weakness-poilcy', 'focus-band', 'kangaskhanite', 'blazikenite', 'latiasite', 'latiosite']
+	}, {
+                name: "Dance Dance",
+		section: 'Server Exclusives',
+
+		onBegin: function () {
+			this.p1.pokemon = this.p1.pokemon.slice(0, 1);
+			this.p1.pokemonLeft = this.p1.pokemon.length;
+			this.p2.pokemon = this.p2.pokemon.slice(0, 1);
+			this.p2.pokemonLeft = this.p2.pokemon.length;
+		},
+		ruleset: ['Pokemon', 'Standard'],
+		banlist: ['Unreleased', 'Illegal', 'Focus Sash', 'Kangaskhanite', 'Soul Dew',
+			'Explosion', 'Final Gambit', 'Healing Wish', 'Lunar Dance', 'v-create', 'Memento', 'Perish Song', 'Selfdestruct',
+			'Arceus', 'Blaziken', 'Darkrai', 'Deoxys', 'Deoxys-Attack', 'Dialga', 'Giratina', 'Giratina-Origin', 'Groudon', 'Ho-Oh', 'Kyogre', 'Kyurem-White', 'Lugia', 'Mewtwo', 'Palkia', 'Rayquaza', 'Reshiram', 'Shaymin-Sky', 'Xerneas', 'Yveltal', 'Zekrom', 'kyurem-black', 'focus band', 'sturdy', 'mega stones'
+		]
+	},{
+		name: "Tundabolt",
+		section: 'Server Exclusives',
+                column: 2,
+
+		onBegin: function() {
+			this.p1.pokemon = this.p1.pokemon.slice(0,1);
+			this.p1.pokemonLeft = this.p1.pokemon.length;
+			this.p2.pokemon = this.p2.pokemon.slice(0,1);
+			this.p2.pokemonLeft = this.p2.pokemon.length;
+		},
+		ruleset: ['Pokemon', 'standard', 'Sleep Clause Mod', 'HP Percentage Mod'],
+           banlist: ['trick room', 'shaymin-sky', 'LC', 'MC', 'Ubers', 'Baton Pass', 'Speed Boost', 'Kangaskhanite', 'Yanmega', 'Abomasnow', 'Arcanine', 'Azumarill', 'Bisharp', 'Blastiose', 'Claydol', 'Bronzong', 'chandelure', 'cofagrigus', 'Darmanitan', 'Dusclops', 'Dusknoir', 'Empoleon', 'gligar', 'heracross', 'hitmontop', 'honchkrow', 'houndoom', 'Kingdra', 'krookodile', 'machamp', 'nidoking', 'nidoqueen', 'porygon-z', 'porygon2', 'Registeel', 'regirock', 'rhyperior', 'roserade', 'rotom-H', 'sableye', 'scrafty', 'sharpedo', 'slowbro', 'snorlax', 'suicune', 'swampert', 'Togekiss', 'xatu', 'alomomola', 'altaria', 'ampharos', 'arbok', 'ariados', 'armaldo', 'articuno', 'audino', 'banette', 'basculin', 'basculin-b', 'bastiodon', 'beartic', 'beautifly', 'beedrill', 'beheeyem', 'bellossom', 'bibarel', 'braviary', 'butterfree', 'cacturne', 'camerupt', 'carnivine', 'carracosta', 'castform', 'chatot', 'cherrim', 'chimecho', 'combusken', 'corsola', 'cradily', 'delcatty', 'delibird', 'dewgong', 'ditto', 'dragonair', 'drifblim', 'dunsparce', 'duosion', 'dustox', 'eelektross', 'exeggutor', 'exploud', 'fraxure', 'furret', 'gabite', 'garbodor', 'gardevoir', 'gigalith', 'girafarig', 'glalie', 'golbat', 'golduck', 'golem', 'golurk', 'gorebyss', 'gothorita', 'granbull', 'grumpig', 'gurdurr', 'haunter', 'heatmor', 'huntail', 'hypno', 'illumise', 'jumpluff', 'jynx', 'kangaskhan', 'kecleon', 'kingler', 'klang', 'kricketune', 'lairon', 'lampent', 'lapraas', 'leavanny', 'ledian', 'lickilicky', 'ludicolo', 'lumineon', 'lunatone', 'luvdisc', 'luxray', 'machoke', 'magmar', 'mandibuzz', 'mantine', 'maractus', 'marowak', 'masquerain', 'mawile', 'meganium', 'metang', 'mightyena', 'minun', 'misdreavus', 'mothim', 'mr.mime', 'muk', 'munchlax', 'murkrow', 'musharna', 'natu', 'noctowl', 'octillery', 'pachirisu', 'parasect', 'pelipper', 'phoine', 'pidgeot', 'piloswine', 'pinsir', 'plusle', 'primeape', 'probopass', 'rampardos', 'raticate', 'regice', 'relicanth', 'roselia', 'rotom-f', 'rotom-s', 'samurott', 'sawk', 'sawsbuck', 'seadra', 'seaking', 'seismitoad', 'seviper', 'shedninja', 'shelgon', 'shiftry', 'shuckle', 'skuntank', 'solrock', 'spinda', 'stantler', 'stoutland', 'stunfisk', 'sudowoodo', 'sunflora', 'swalot', 'swanna', 'tangela', 'throh', 'togetic', 'torkoal', 'torterra', 'tropius', 'unfezant', 'unown', 'ursaring', 'vanilluxe', 'vespiquen', 'victreebel', 'vigoroth', 'vileplume', 'volbeat', 'wailord', 'walrein', 'wartortle', 'watchog', 'weezing', 'whiscash', 'wigglytuff', 'wormadam', 'wormadam-g', 'wormadam-s', 'zangoose', 'zebstrika', 'zweilous', 'absol', 'aggron', 'amoonguss', 'bouffalant', 'clefable', 'crawdaunt', 'crustle', 'drapion', 'druddigon', 'durant', 'dusknoir', 'electivire', 'emboar', 'escavalier', 'feraligatr', 'ferroseed', 'gallade', 'hariyama', 'hitmonchan', 'hitmonlee', 'kabutops', 'klinklang', 'lanturn', 'lilligant', 'magmortar', 'magneton', 'medicham', 'mespirit', 'moltres', 'omastar', 'poliwrath', 'quagsire', 'qwilfish', 'rhydon', 'rotom', 'rotom-c', 'sandslash', 'sigilyph', 'slowking', 'smeargle', 'spiritomb', 'steelix', 'tangrowth', 'blissey', 'breloom', 'cloyster', 'conkeldurr', 'donphan', 'dragonite', 'ferrothorn', 'gastrodon', 'gliscor', 'gyardos', 'haxorus', 'heatran', 'hippowdon', 'hydreigon', 'jellicent', 'kyurem-black', 'landorus-therian', 'lucario', 'magnezone', 'mamoswine', 'metagross', 'politoed', 'reuniclus', 'rotom-w', 'scizor', 'skarmory', 'toxicroak', 'tyranitar', 'venusaur', 'mewtwo', 'aegislash']
+
+
+	},
+  
+ 
+
+          ];
